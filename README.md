@@ -62,9 +62,12 @@ macOS and Linux builds are not published at this time.
 
 | Document | Language |
 |----------|----------|
-| [HABITUS_MANUAL_EN.md](HABITUS_MANUAL_EN.md) | User manual (English) |
-| `HABITUS_Brief_Tutorial.pdf` | Hands-on tutorial (English) — see releases |
-| `HABITUS_Kisa_Kullanim_Kilavuzu.pdf` | Hands-on tutorial (Turkish) — see releases |
+| [HABITUS_Brief_Tutorial.pdf](HABITUS_Brief_Tutorial.pdf) | Hands-on tutorial (English) |
+| [HABITUS_Kisa_Kullanim_Kilavuzu.pdf](HABITUS_Kisa_Kullanim_Kilavuzu.pdf) | Hands-on tutorial (Turkish) |
+
+Both tutorials walk through the complete eight-step workflow with screenshots
+from a real analysis of *Pinus brutia* Ten., and are also attached to the
+[latest release](https://github.com/omerorucu/habitus/releases/latest).
 
 The in-application Help tab contains the full workflow description, recommended minimum sample sizes per algorithm and citation details.
 
