@@ -3,7 +3,7 @@
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.txt)
-[![Platform](https://img.shields.io/badge/platform-Windows-blue)](https://github.com/omerorucu/habitus/releases/latest)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://github.com/omerorucu/habitus/releases/latest)
 
 ---
 
@@ -19,16 +19,25 @@ Everything runs locally on your machine. No data leave your computer.
 
 Installers are published on the [**latest release**](https://github.com/omerorucu/habitus/releases/latest) page.
 
-| File | Description |
-|------|-------------|
-| `HABITUS_Setup_v1.0.0.exe` | Windows installer (recommended) |
-| `HABITUS_v1.0.0_Windows_x64_portable.zip` | Portable version — unzip and run `HABITUS.exe`, no installation |
+| Platform | File | Description |
+|----------|------|-------------|
+| Windows | `HABITUS_Setup_v1.0.0.exe` | Installer (recommended) |
+| Windows | `HABITUS_v1.0.0_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| macOS | `HABITUS_Setup_v1.0.0_macOS.dmg` | Disk image, Apple Silicon and Intel |
+| Linux | `HABITUS_v1.0.0_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v1.0.0_Linux_x64.tar.gz` | Archive, extract and run |
 
-Both are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning.
+The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk image is signed and notarised by Apple.
 
-**Requirements:** Windows 10 or 11, 64-bit. 8 GB RAM recommended for high-resolution rasters.
+**Requirements**
 
-macOS and Linux builds are not published at this time.
+| Platform | Minimum |
+|----------|---------|
+| Windows | Windows 10 or 11, 64-bit |
+| macOS | macOS 11 (Big Sur) or later, Apple Silicon or Intel |
+| Linux | glibc 2.31 or later (Ubuntu 20.04 and later) |
+
+8 GB RAM is recommended for high-resolution rasters on all platforms.
 
 ---
 
