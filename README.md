@@ -1,9 +1,54 @@
-# HABITUS v1.0.0
+# HABITUS v1.0.1
 
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.txt)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://github.com/omerorucu/habitus/releases/latest)
+
+---
+
+## What's new in v1.0.1
+
+This release answers the feedback roughly 370 researchers sent after v1.0.0.
+Almost all of it made the same point: the report looked finished, but its
+numbers were more confident than the method behind them justified.
+
+**If you re-run a v1.0.0 analysis in v1.0.1, your evaluation scores will go
+down.** That is the intended outcome. The old numbers were inflated by a
+validation design that tested the model on data it had effectively already
+seen.
+
+- **Spatial block cross-validation, now the default.** Folds are whole
+  geographic blocks, sized from the empirical variogram of your own
+  predictors. A random split on spatially clustered records scores the model
+  on information it already holds (Roberts et al. 2017,
+  [doi:10.1111/ecog.02881](https://doi.org/10.1111/ecog.02881)).
+  Environmental blocking and the classical random split remain selectable.
+- **Bring your own absence data.** Surveyed absences or your own background
+  sample, used instead of or alongside generated pseudo-absences and reported
+  as *true absences* throughout.
+- **Accessible-area restriction, on by default.** Background is drawn from a
+  buffer around the records rather than the whole raster, so environments the
+  species never had the chance to occupy stop counting as evidence of
+  unsuitability (Barve et al. 2011).
+- **Spatial thinning** of clustered occurrence records, manual or derived from
+  the measured autocorrelation range.
+- **Two-layer ensemble.** Each algorithm's replicates are averaged first,
+  producing a per-algorithm mean map and a standard-deviation map showing
+  where that algorithm is unstable; the cross-algorithm ensemble is built from
+  those means.
+- **One seed for the whole run** plus `habitus_run_config.json` recording every
+  setting, the cross-validation design actually used, package versions, and
+  which settings were left at their defaults. Random Forest, GBM and BRT were
+  previously unseeded and produced a different map on every run.
+- **Uncertainty, calibration, prevalence and thresholds** reported for every
+  model.
+- **Raster grid mismatches are detected** before modelling instead of silently
+  producing a map from misaligned layers.
+- **Readable, copyable error messages.**
+
+Full detail, including what was deliberately left out, is in
+[CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -21,11 +66,11 @@ Installers are published on the [**latest release**](https://github.com/omeroruc
 
 | Platform | File | Description |
 |----------|------|-------------|
-| Windows | `HABITUS_Setup_v1.0.0.exe` | Installer (recommended) |
-| Windows | `HABITUS_v1.0.0_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
-| macOS | `HABITUS_Setup_v1.0.0_macOS.dmg` | Disk image, Apple Silicon and Intel |
-| Linux | `HABITUS_v1.0.0_x86_64.AppImage` | Portable — `chmod +x` then run |
-| Linux | `HABITUS_Setup_v1.0.0_Linux_x64.tar.gz` | Archive, extract and run |
+| Windows | `HABITUS_Setup_v1.0.1.exe` | Installer (recommended) |
+| Windows | `HABITUS_v1.0.1_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| macOS | `HABITUS_Setup_v1.0.1_macOS.dmg` | Disk image, Apple Silicon and Intel |
+| Linux | `HABITUS_v1.0.1_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v1.0.1_Linux_x64.tar.gz` | Archive, extract and run |
 
 The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk image is signed and notarised by Apple.
 
