@@ -4,6 +4,206 @@ All notable changes to HABITUS are recorded here.
 
 ---
 
+## v1.0.2 — 18 September 2026
+
+This release answers the second round of feedback on v1.0.1, and in particular a
+detailed assessment from Citlalli Esparza Estrada (UNAM) and a bug report and
+three requests from Maxwell C. Obiakara (University of Lagos). Both supplied
+references; the work below follows them rather than an opinion about them.
+
+### Environmental novelty (the largest gap in v1.0.1)
+
+- **ExDet novelty diagnostics on every projection.** A suitability value does not
+  distinguish a cell the model can speak about from one it cannot, and until now
+  nothing in the output marked an extrapolation as one. Four rasters are now
+  written beside each projection:
+  - `{scenario}_NT1.tif` — the cell is outside the calibration range of at least
+    one predictor. This is what a MESS surface detects.
+  - `{scenario}_NT2.tif` — every predictor is individually inside its range, but
+    the *combination* never occurred during calibration. A univariate check
+    cannot see this by construction, and it is not a corner case: in the worked
+    example of Mesgaran et al., 6,617 of the 10,785 points that passed the
+    univariate test had a distorted correlation structure.
+  - `{scenario}_MIC_NT1.tif`, `{scenario}_MIC_NT2.tif` — which predictor is
+    responsible. "There is extrapolation here" is not actionable; "because of
+    precipitation seasonality" is.
+
+  The report states what fraction of cells is novel by each test, which
+  predictors drive it, and warns when more than a quarter of the projection lies
+  outside the calibration range.
+  (Mesgaran et al. 2014, doi:10.1111/ddi.12209)
+
+- **NT2 is refused rather than faked when it cannot be computed.** The
+  Mahalanobis distance needs the inverse of the calibration covariance matrix,
+  and HABITUS allows correlated predictors, so that matrix can be numerically
+  singular. When it is, NT2 is not reported and the reason is given, including
+  what to do about it. A plausible-looking number from a singular matrix would
+  be worse than no number.
+
+### Calibration area
+
+- **Supply your own calibration area as a polygon layer.** Set the accessible
+  area to `polygon` and load ecoregions, biogeographic provinces or basins as
+  SHP, GPKG, GeoJSON, KML or GML.
+
+- **The biogeographic-entity method, automated.** With "keep only the polygons
+  containing an occurrence record" the program selects the units the species
+  actually occupies, so a continent-wide layer can be used directly instead of
+  being clipped by hand first. Rojas-Soto et al. (2024) compared seven ways of
+  delimiting a calibration area across 31 species: 68% of the best models came
+  from the accessible-area approach, and this is the method they recommend.
+  **Both methods HABITUS had before this release, `buffer` and `mcp_buffer`,
+  fall in the group that paper found weaker**, and neither can express a
+  barrier. They remain available and remain far better than sampling the whole
+  raster. (doi:10.1111/jbi.14834)
+
+- A layer in a different coordinate system is reprojected and the fact recorded.
+  Failures stop the run and name the cause: unreadable layer, no polygons, no
+  polygon containing a record (almost always a coordinate-system mismatch), or
+  no overlap with the rasters.
+
+- **The calibration area is now described in `habitus_run_config.json`**: the
+  layer, whether selection by occurrence was used, how many polygons the layer
+  held and how many were kept, and whether it was reprojected. Rojas-Soto et
+  al.'s other finding was that published studies routinely fail to describe how
+  the calibration area was built, which makes them impossible to repeat.
+
+### Variable selection
+
+- **Univariate AUC no longer weights the ranking.** It carried 30% of the
+  priority score. The choice formally rested with the user, but a ranking users
+  follow is a decision in all but name, and ordering predictors by univariate
+  discrimination promotes whichever variable happens to separate presences from
+  background in this sample. That is the wrong criterion for ecological
+  relevance and for transferability: a predictor can discriminate well here
+  through a correlation with the real driver and fail wherever that correlation
+  does not hold. The score is now collinearity only (VIF and mean correlation);
+  AUC stays in the table as information.
+
+- **The AUC badge is no longer traffic-lit.** Green, amber and red said that a
+  low univariate AUC is a defect. It is not: a predictor can discriminate poorly
+  alone and still be the one that matters in combination. The colouring was a
+  stronger steer than the ranking weight, so it went too.
+  (Both raised by Citlalli Esparza Estrada.)
+
+### Model parameterisation
+
+- **GLM terms are now what they say.** The option named "quadratic" expanded to
+  linear + quadratic + *every pairwise interaction*, and nothing in the interface
+  said so. There are now three settings: `linear` (x), `quadratic` (x, x², no
+  interactions) and `interactions` (the previous behaviour). In MaxEnt
+  feature-class terms, L, LQ and LQP.
+
+  This matters for sample size. With eight predictors the three produce 8, 16 and
+  44 terms; under the ten-events-per-variable rule that is roughly 80, 160 and
+  440 occurrence records. A curved response is now available without paying for
+  the interactions. *(Requested by Maxwell C. Obiakara.)*
+
+- **The MaxEnt regularisation multiplier is relabelled and its range widened**
+  to 0.1–20. It was already adjustable, as "Regularisation β", but that is not
+  the name ENMeval and kuenm use and it was being missed. It is now
+  "Regularisation multiplier (β / RM)" and the tooltip says what it does, that
+  HABITUS does not yet search over it, and that the best value depends on the
+  calibration area (Rojas-Soto et al. 2024), so it should be revisited when that
+  changes.
+
+### Fixed
+
+- **HABITUS could fail to start, or fail on every coordinate operation, on any
+  machine with another GDAL installation.** The startup repair for a stale
+  `PROJ_LIB` checked only that a `proj.db` file existed at the configured path,
+  not that it was usable. PostGIS ships one of an older schema, so on those
+  machines the repair was skipped and PROJ then failed with "proj.db lacks
+  DATABASE.LAYOUT.VERSION.MAJOR ... It comes from another PROJ installation".
+  The path is now accepted only if the database carries the schema metadata the
+  linked PROJ requires.
+
+### Startup and updates
+
+- **A splash screen while the scientific stack loads.** HABITUS imports
+  rasterio, scikit-learn, three gradient-boosting libraries, elapid, pygam and
+  matplotlib before its window can appear, and on a cold start that is several
+  seconds of nothing at all on screen. A user cannot tell that apart from a
+  program that failed to start, so they click the icon again. The splash shows
+  the mark, the authors, the version and the name of the package currently
+  loading; when a packaged build is missing a dependency, the last line names
+  the one it stopped on.
+
+  This required moving matplotlib and the habitus package out of module-level
+  imports in `main.py`. They were pulled in before `QApplication` existed, so
+  no window of any kind could be shown during the wait.
+
+- **Applying an update no longer fails on a normal Windows install.** Patches
+  were written to a `patches` folder beside the executable, which for an
+  installation in Program Files is not writable by an ordinary process:
+  "Apply update" ended in `[WinError 5] Access is denied` with no way forward
+  short of running the whole program as administrator, which it does not
+  otherwise need. The updater now uses the install directory only when it is
+  genuinely writable and a per-user directory otherwise
+  (`%LOCALAPPDATA%\HABITUS\patches`, or the platform equivalent). Both
+  locations are on the import path, so a portable installation keeps working
+  exactly as before. If even the per-user directory is barred, the message now
+  says what failed, that nothing was changed, and what to do instead.
+
+- The version shown in the application metadata was hard-coded to 1.0.0 and is
+  now read from `version.py`.
+
+### Packaging and diagnostics
+
+- **`HABITUS --selftest`.** A new startup mode that exercises every lazily
+  imported path on real data and prints a report. It checks the PROJ database,
+  a coordinate reprojection, the vector stack, a complete calibration-polygon
+  read-select-buffer-rasterize cycle, an ExDet run including the NT2 branch, a
+  GeoTIFF round trip, the GLM term counts, which algorithms this build can run,
+  and finally Qt.
+
+  Two reasons. Several dependencies are imported inside the function that uses
+  them, so PyInstaller cannot see them and a bundle missing one starts
+  normally and only fails when the user reaches that feature. And "it installs
+  but it will not open" is not a diagnosis: a windowed application that dies
+  during startup leaves nothing to read. The self-test runs before Qt is
+  imported, writes its report to a file and prints it, so it still works when
+  the graphics stack is what is broken, and names software rendering as the
+  thing to try when Qt is the only failure.
+
+  The Linux and macOS release workflows now run it against the frozen binary,
+  so a bundle missing a dependency fails the build instead of shipping.
+
+- **The build no longer depends on which developer tools are installed.**
+  PyInstaller imports every submodule it scans, and `xgboost.testing` calls
+  `pytest.importorskip("hypothesis")`, which raises pytest's `Skipped` rather
+  than `ImportError`. With pytest absent that is a tolerated import failure;
+  with pytest present it aborted the build. Test submodules are now excluded
+  from collection, which is also what a shipped application wants.
+
+- **`pyogrio` and `shapely` are now collected properly**, with their GDAL DLLs
+  and data files. `pyogrio` was not collected at all, which would have made
+  the calibration-polygon feature fail in the packaged build while working
+  perfectly from source.
+
+### Known limitations, unchanged
+
+- No systematic hyperparameter search. ENMeval and kuenm exist to do this and
+  HABITUS does not yet do it; the regularisation multiplier and feature classes
+  have to be chosen deliberately.
+- No sampling-bias surface.
+- `grinnell`-style dispersal simulation for delimiting the accessible area is not
+  implemented. It performed best in Rojas-Soto et al. but requires an
+  ellipsoid niche model and an iterative spread simulation, which is a separate
+  subsystem rather than an added option; the recommended BE method is
+  implemented instead.
+- Plot export is still PNG only. TIFF with selectable compression and vector PDF
+  are queued. *(Requested by Maxwell C. Obiakara.)*
+- The "Stage 2 — Variables" wheel-scroll trap is not yet fixed.
+  *(Reported by Maxwell C. Obiakara.)*
+- Occurrence records are still not matched to the environmental conditions of
+  their own date.
+- Multi-species batch runs are still not available.
+- Rasters must still be aligned before loading; HABITUS detects misalignment but
+  does not correct it.
+
+---
+
 ## v1.0.1 — 14 September 2026
 
 This release answers the feedback received on v1.0.0 from roughly 370 researchers.
