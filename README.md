@@ -7,45 +7,59 @@
 
 ---
 
-## What's new in v1.0.1
+## What's new in v1.0.2
 
-This release answers the feedback roughly 370 researchers sent after v1.0.0.
-Almost all of it made the same point: the report looked finished, but its
-numbers were more confident than the method behind them justified.
+> **This release ships for Windows and Linux only.** The macOS build is held
+> back while a packaging fault is fixed: `elapid` cannot import there, because
+> `rasterio` and `pyproj` each bundle a `libproj.25.9.8.1.dylib` of the same
+> version but a different build, and PyInstaller resolves pyproj's extension
+> against the wrong one. MaxEnt therefore does not load and the macOS build
+> carries 12 of the 13 algorithms. The same build definition produced v1.0.0
+> and v1.0.1, so this has almost certainly been true since the first release;
+> nothing reported it because nothing checked. **macOS users: v1.0.1 remains
+> available and is not affected differently.**
 
-**If you re-run a v1.0.0 analysis in v1.0.1, your evaluation scores will go
-down.** That is the intended outcome. The old numbers were inflated by a
-validation design that tested the model on data it had effectively already
-seen.
+Two contributions shaped this release: a detailed assessment from **Citlalli
+Esparza Estrada** (UNAM) and a bug report with three requests from **Maxwell
+C. Obiakara** (University of Lagos). Both supplied references, and the work
+follows them rather than an opinion about them.
 
-- **Spatial block cross-validation, now the default.** Folds are whole
-  geographic blocks, sized from the empirical variogram of your own
-  predictors. A random split on spatially clustered records scores the model
-  on information it already holds (Roberts et al. 2017,
-  [doi:10.1111/ecog.02881](https://doi.org/10.1111/ecog.02881)).
-  Environmental blocking and the classical random split remain selectable.
-- **Bring your own absence data.** Surveyed absences or your own background
-  sample, used instead of or alongside generated pseudo-absences and reported
-  as *true absences* throughout.
-- **Accessible-area restriction, on by default.** Background is drawn from a
-  buffer around the records rather than the whole raster, so environments the
-  species never had the chance to occupy stop counting as evidence of
-  unsuitability (Barve et al. 2011).
-- **Spatial thinning** of clustered occurrence records, manual or derived from
-  the measured autocorrelation range.
-- **Two-layer ensemble.** Each algorithm's replicates are averaged first,
-  producing a per-algorithm mean map and a standard-deviation map showing
-  where that algorithm is unstable; the cross-algorithm ensemble is built from
-  those means.
-- **One seed for the whole run** plus `habitus_run_config.json` recording every
-  setting, the cross-validation design actually used, package versions, and
-  which settings were left at their defaults. Random Forest, GBM and BRT were
-  previously unseeded and produced a different map on every run.
-- **Uncertainty, calibration, prevalence and thresholds** reported for every
-  model.
-- **Raster grid mismatches are detected** before modelling instead of silently
-  producing a map from misaligned layers.
-- **Readable, copyable error messages.**
+- **Where the model is extrapolating, on every projection.** Four rasters are
+  written beside the suitability maps using ExDet (Mesgaran et al. 2014,
+  [doi:10.1111/ddi.12209](https://doi.org/10.1111/ddi.12209)). `NT1` marks
+  cells outside the calibration range of at least one predictor, which is what
+  a MESS surface detects. `NT2` marks cells where every predictor is
+  individually in range but the *combination* never occurred during
+  calibration — a univariate check cannot see those by construction, and they
+  are not rare: in the paper's worked example, 6,617 of the 10,785 points that
+  passed the univariate test had a distorted correlation structure. Two `MIC`
+  rasters name the predictor responsible.
+- **Calibration areas you define yourself.** Supply ecoregions, biogeographic
+  provinces or basins as a vector layer and let HABITUS keep the units that
+  contain an occurrence record. Rojas-Soto et al. (2024,
+  [doi:10.1111/jbi.14834](https://doi.org/10.1111/jbi.14834)) compared seven
+  methods across 31 species; this is the one they recommend, and **both
+  methods HABITUS had before fall in the group they found weaker**.
+- **Univariate AUC no longer weights variable ranking**, and its badge is no
+  longer traffic-lit. A ranking users follow is a decision in all but name,
+  and a low univariate AUC is not by itself a reason to drop a predictor.
+- **GLM terms mean what they say.** "Quadratic" silently fitted every pairwise
+  interaction as well. There are now three settings: `linear`, `quadratic`
+  (no interactions) and `interactions`. With eight predictors that is 8, 16
+  and 44 terms.
+- **A splash screen** naming each package as it loads, instead of several
+  seconds of empty screen that is indistinguishable from a failed start.
+- **`HABITUS --selftest`** exercises every lazily imported path on real data
+  and prints a report. If the program will not open, run this and send the
+  output. The release workflows run it against the frozen binary, so a bundle
+  missing a dependency fails the build instead of shipping. It found two real
+  faults on its first run.
+
+**Fixed:** startup failed on any machine with another GDAL installation (the
+PROJ repair checked that `proj.db` existed, not that it was usable); applying
+an update failed with `[WinError 5]` on a Program Files install; the report
+asserted a variable-exclusion procedure that was not followed; a block size
+derived from the variogram was recorded as user-specified.
 
 Full detail, including what was deliberately left out, is in
 [CHANGELOG.md](CHANGELOG.md).
@@ -66,13 +80,14 @@ Installers are published on the [**latest release**](https://github.com/omeroruc
 
 | Platform | File | Description |
 |----------|------|-------------|
-| Windows | `HABITUS_Setup_v1.0.1.exe` | Installer (recommended) |
-| Windows | `HABITUS_v1.0.1_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
-| macOS | `HABITUS_Setup_v1.0.1_macOS.dmg` | Disk image, Apple Silicon and Intel |
-| Linux | `HABITUS_v1.0.1_x86_64.AppImage` | Portable — `chmod +x` then run |
-| Linux | `HABITUS_Setup_v1.0.1_Linux_x64.tar.gz` | Archive, extract and run |
+| Windows | `HABITUS_Setup_v1.0.2.exe` | Installer (recommended) |
+| Windows | `HABITUS_v1.0.2_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| Linux | `HABITUS_v1.0.2_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v1.0.2_Linux_x64.tar.gz` | Archive, extract and run |
+| macOS | *not in v1.0.2* | See the note above; `HABITUS_Setup_v1.0.1_macOS.dmg` remains on the [v1.0.1 release](https://github.com/omerorucu/habitus/releases/tag/v1.0.1) |
+| All | `habitus_sample.zip` | Sample dataset: *Pinus brutia*, 108 records, 23 predictors, and the calibration-polygon and absence files for trying the v1.0.2 features |
 
-The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk image is signed and notarised by Apple.
+The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk images, when published, are signed and notarised by Apple.
 
 **Requirements**
 
