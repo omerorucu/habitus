@@ -1,9 +1,10 @@
-# HABITUS v1.0.1
+# HABITUS v1.0.2
 
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.txt)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://github.com/omerorucu/habitus/releases/latest)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue)](https://github.com/omerorucu/habitus/releases/latest)
+[![macOS](https://img.shields.io/badge/macOS-v1.0.1-lightgrey)](https://github.com/omerorucu/habitus/releases/tag/v1.0.1)
 
 ---
 
