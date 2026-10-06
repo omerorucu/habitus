@@ -1,24 +1,72 @@
-# HABITUS v1.0.2
+# HABITUS v1.0.3
 
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.txt)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-blue)](https://github.com/omerorucu/habitus/releases/latest)
-[![macOS](https://img.shields.io/badge/macOS-v1.0.1-lightgrey)](https://github.com/omerorucu/habitus/releases/tag/v1.0.1)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://github.com/omerorucu/habitus/releases/latest)
 
 ---
 
-## What's new in v1.0.2
+## What's new in v1.0.3
 
-> **This release ships for Windows and Linux only.** The macOS build is held
-> back while a packaging fault is fixed: `elapid` cannot import there, because
-> `rasterio` and `pyproj` each bundle a `libproj.25.9.8.1.dylib` of the same
-> version but a different build, and PyInstaller resolves pyproj's extension
-> against the wrong one. MaxEnt therefore does not load and the macOS build
-> carries 12 of the 13 algorithms. The same build definition produced v1.0.0
-> and v1.0.1, so this has almost certainly been true since the first release;
-> nothing reported it because nothing checked. **macOS users: v1.0.1 remains
-> available and is not affected differently.**
+> **macOS is back, and MaxEnt now loads on it.** v1.0.2 shipped for Windows and
+> Linux only. This release brings macOS back as two disk images, one for each
+> kind of Mac, with all 13 algorithms.
+
+**macOS**
+
+- **Two disk images, one per processor.** `HABITUS_Setup_v1.0.3_macOS_arm64.dmg`
+  is for Apple Silicon (M1 and later) and `HABITUS_Setup_v1.0.3_macOS_x86_64.dmg`
+  for Intel Macs; Apple menu → About This Mac shows which you have. The macOS
+  disk images of earlier releases were built on an Apple Silicon machine and, as
+  far as can be told, did not start on an Intel Mac. If a download would not
+  install on an Intel Mac, that is the likely reason.
+- **MaxEnt works.** The macOS build could not import `elapid`, which provides
+  MaxEnt, so it carried 12 of the 13 algorithms. The cause was found by reading
+  the libraries inside the packages: `rasterio` and `pyproj` each bundle a
+  `libproj` under the same file name but from a different build (rasterio's
+  exports its symbols with an `internal_` prefix, pyproj's does not), and the
+  packaging step kept only one of them, so pyproj ended up bound to the wrong
+  one. Every bundled library now has a name of its own, as it already did on
+  Windows. The packaging self-test reports 13 of 13 on both builds. v1.0.0 and
+  v1.0.1 were built the same way, so they almost certainly lacked MaxEnt on
+  macOS too.
+- **Homebrew is not needed.** XGBoost and LightGBM ask for an OpenMP library
+  that neither ships and that, on a Mac, normally comes from Homebrew. They now
+  use the copy that scikit-learn ships, and the build is tested with Homebrew's
+  copy removed.
+- **The disk image has an Applications shortcut**: drag HABITUS onto it. The
+  images are signed with the developer's Apple Developer ID certificate and
+  notarised by Apple.
+- **macOS 14 (Sonoma) or later on Apple Silicon, macOS 15 (Sequoia) or later on
+  Intel.** That is the oldest system the bundled geospatial libraries were built
+  for, read from the libraries themselves. It is higher than the macOS 11 this
+  page used to state, and older systems are not supported.
+- So far this has been verified by the build's own self-test on a machine of
+  each processor type, not yet on a range of Macs. A report from a Mac that
+  does not work is welcome.
+
+**All platforms**
+
+- **MaxEnt ignored the settings you chose.** A renamed option in the `elapid`
+  library meant the regularisation multiplier, the number of hinge features and
+  the lambda rule were silently replaced by library defaults. They are applied
+  now, MaxEnt is seeded so the same seed gives the same map, and its predictions
+  are no longer rescaled after the fact, which had also distorted the
+  calibration statistics. If you ran MaxEnt in an earlier version, run it again:
+  results can differ.
+- **The update button works.** It used to try to fetch source files from this
+  repository, which holds none, so it always reported a failure and blamed your
+  connection. It now downloads the installer for your platform into your
+  download folder.
+
+Full detail is in [CHANGELOG.md](CHANGELOG.md).
+
+---
+
+## v1.0.2
+
+> v1.0.2 was released for Windows and Linux only. The macOS builds returned in v1.0.3, above.
 
 Two contributions shaped this release: a detailed assessment from **Citlalli
 Esparza Estrada** (UNAM) and a bug report with three requests from **Maxwell
@@ -81,21 +129,23 @@ Installers are published on the [**latest release**](https://github.com/omeroruc
 
 | Platform | File | Description |
 |----------|------|-------------|
-| Windows | `HABITUS_Setup_v1.0.2.exe` | Installer (recommended) |
-| Windows | `HABITUS_v1.0.2_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
-| Linux | `HABITUS_v1.0.2_x86_64.AppImage` | Portable — `chmod +x` then run |
-| Linux | `HABITUS_Setup_v1.0.2_Linux_x64.tar.gz` | Archive, extract and run |
-| macOS | *not in v1.0.2* | See the note above; `HABITUS_Setup_v1.0.1_macOS.dmg` remains on the [v1.0.1 release](https://github.com/omerorucu/habitus/releases/tag/v1.0.1) |
+| Windows | `HABITUS_Setup_v1.0.3.exe` | Installer (recommended) |
+| Windows | `HABITUS_v1.0.3_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| Linux | `HABITUS_v1.0.3_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v1.0.3_Linux_x64.tar.gz` | Archive, extract and run |
+| macOS (Apple Silicon) | `HABITUS_Setup_v1.0.3_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
+| macOS (Intel) | `HABITUS_Setup_v1.0.3_macOS_x86_64.dmg` | Disk image for Intel Macs |
 | All | `habitus_sample.zip` | Sample dataset: *Pinus brutia*, 108 records, 23 predictors, and the calibration-polygon and absence files for trying the v1.0.2 features |
 
-The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk images, when published, are signed and notarised by Apple.
+The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk images are signed with the developer's Apple Developer ID certificate and notarised by Apple, so Gatekeeper opens them without an unidentified-developer warning.
 
 **Requirements**
 
 | Platform | Minimum |
 |----------|---------|
 | Windows | Windows 10 or 11, 64-bit |
-| macOS | macOS 11 (Big Sur) or later, Apple Silicon or Intel |
+| macOS, Apple Silicon | macOS 14 (Sonoma) or later |
+| macOS, Intel | macOS 15 (Sequoia) or later |
 | Linux | glibc 2.31 or later (Ubuntu 20.04 and later) |
 
 8 GB RAM is recommended for high-resolution rasters on all platforms.
