@@ -1,4 +1,4 @@
-# HABITUS v1.1.0
+# HABITUS v1.1.1
 
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
@@ -7,7 +7,27 @@
 
 ---
 
-## What's new in v1.1.0
+## What's new in v1.1.1
+
+> **Earlier releases are no longer offered for download.** v1.0.0 to v1.0.2 and
+> v1.1.0 each carry faults that are fixed here; the details are in
+> [CHANGELOG.md](CHANGELOG.md). Please use v1.1.1.
+
+**A second HABITUS window no longer opens in the middle of a model run (macOS).**
+While models were running, a second copy of the program, with its own splash
+screen, could open by itself. Python starts a small helper process the first time
+anything creates a multiprocessing lock, and scikit-learn does so every time it
+fits a forest. On macOS and Linux the helper is launched as a new copy of the
+running program, and the packaged program did not recognise it as a helper. It
+does now, and any copy of the program that a running one starts exits quietly
+instead of opening a window. Windows has no such helper and was not affected.
+
+This was checked on the published macOS disk images for both Apple Silicon and
+Intel, on the Linux build, and by the person who reported it, on a Mac.
+
+---
+
+## v1.1.0
 
 > **This release changes numbers, on purpose.** Runs on the *Pinus brutia*
 > sample data, set side by side with R packages, exposed errors that were silent.
@@ -180,12 +200,12 @@ Installers are published on the [**latest release**](https://github.com/omeroruc
 
 | Platform | File | Description |
 |----------|------|-------------|
-| Windows | `HABITUS_Setup_v1.1.0.exe` | Installer (recommended) |
-| Windows | `HABITUS_v1.1.0_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
-| Linux | `HABITUS_v1.1.0_x86_64.AppImage` | Portable — `chmod +x` then run |
-| Linux | `HABITUS_Setup_v1.1.0_Linux_x64.tar.gz` | Archive, extract and run |
-| macOS (Apple Silicon) | `HABITUS_Setup_v1.1.0_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
-| macOS (Intel) | `HABITUS_Setup_v1.1.0_macOS_x86_64.dmg` | Disk image for Intel Macs |
+| Windows | `HABITUS_Setup_v1.1.1.exe` | Installer (recommended) |
+| Windows | `HABITUS_v1.1.1_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| Linux | `HABITUS_v1.1.1_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v1.1.1_Linux_x64.tar.gz` | Archive, extract and run |
+| macOS (Apple Silicon) | `HABITUS_Setup_v1.1.1_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
+| macOS (Intel) | `HABITUS_Setup_v1.1.1_macOS_x86_64.dmg` | Disk image for Intel Macs |
 | All | `habitus_sample.zip` | Sample dataset: *Pinus brutia*, 108 records, 23 predictors, and the calibration-polygon and absence files for trying the calibration-area and absence-data features |
 
 The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk images are signed with the developer's Apple Developer ID certificate and notarised by Apple, so Gatekeeper opens them without an unidentified-developer warning.
