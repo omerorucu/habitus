@@ -77,6 +77,35 @@ them are new, for the stray-copy guard.
 
 **Workaround for v1.1.0.** None that is simple; install v1.1.1.
 
+### Windows files re-issued under the same version (8 October 2026)
+
+The Windows installer and the portable ZIP of v1.1.1 were replaced, keeping the
+version number, with a build that fixes a start-up crash: on a machine that still
+had an old `patches` folder (the older updater left one behind), the program
+showed "Unhandled exception in script: 'NoneType' object has no attribute
+'write'" and did not open. A packaged Windows program started from Explorer or
+from the setup wizard has no standard error, and `main.py` wrote a warning to it.
+
+The warning is now written only if there is a standard error to write to, a
+missing standard stream gets a null sink once start-up is past the self-test, and
+two `flush()` calls on a forced shutdown are guarded. Reproduced on the packaged
+v1.1.1 by starting it the way Explorer does, with a `patches` folder beside it;
+the replacement was started the same way and opened normally. Whether the
+reporter's own machine had such a folder was not established.
+
+The macOS and Linux files were not replaced, because the same fault was measured
+on them and is narrower. The published v1.1.1 was started on a macOS 14, a
+macOS 15 (Intel) and an Ubuntu 24.04 machine, with and without a leftover
+`patches` folder and with standard error open or closed. It stops only when the
+folder exists *and* the program is started with no standard error at all (file
+descriptor 2 closed). With standard error open, which is what a launcher gives a
+program, it starts normally and prints the warning; on macOS it also starts
+normally when opened the way the Finder opens it. The Windows case is wider
+because a program started from Explorer has no standard error at all. The fix is
+in the source and will be in the next build of the macOS and Linux files. If you
+downloaded the Windows installer before this date and the program does not
+start, download it again.
+
 ---
 
 ## v1.1.0 — 8 October 2026
