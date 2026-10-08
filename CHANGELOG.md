@@ -4,6 +4,81 @@ All notable changes to HABITUS are recorded here.
 
 ---
 
+## v1.1.1 — 8 October 2026
+
+One defect, reported on macOS after v1.1.0, with a second copy of the program
+opening in the middle of a model run.
+
+### A second HABITUS window opened during modelling (macOS)
+
+While models were running, a second HABITUS window, with its own splash screen,
+opened by itself. It happened from time to time rather than at a fixed point, and
+the run in the first window carried on.
+
+**Cause.** Python's `multiprocessing` starts a small helper process, the resource
+tracker, the first time anything creates a multiprocessing lock. scikit-learn does
+so through joblib every time it fits a forest. On macOS and Linux the helper is
+started as a new copy of the running executable, with the arguments
+`-c "from multiprocessing.resource_tracker import main;main(<fd>)"`. In the
+packaged program the running executable is HABITUS itself. PyInstaller includes a
+hook that recognises those arguments and runs the helper instead of the program,
+but it only acts when the program calls `multiprocessing.freeze_support()`.
+HABITUS did not call it, so each helper came up as another HABITUS.
+
+**What was measured, and what was not.**
+
+- Measured, from source on Windows: one run of all 18 algorithms on a small data
+  set created 54 multiprocessing locks. Every one came from joblib's thread pool.
+  None of HABITUS's own code starts a process.
+- Read from the code, not observed on a Mac: that creating such a lock starts the
+  resource tracker as a copy of the running executable (CPython's
+  `resource_tracker`), and that PyInstaller's hook turns that copy into the helper
+  only once the program has called `freeze_support()` (the hook's source). The
+  published v1.1.0 was not seen starting a helper. Windows has no resource
+  tracker, which is why the fault could not show there.
+- Measured on the published disk images, on macOS 14 (Apple Silicon) and macOS 15
+  (Intel): run as a copy of a running HABITUS, v1.1.0 started the application and
+  was still running 25 seconds later; v1.1.1 exited at once, with no window.
+- Measured in the packaged v1.1.1 on both macOS builds and on Linux: the real
+  resource tracker was started, a `multiprocessing` worker pool ran, and no copy of
+  the program appeared.
+
+**What was changed.**
+
+- `multiprocessing.freeze_support()` is the first thing the program runs.
+- A process that finds it was started by a running HABITUS exits quietly instead
+  of opening a window. A normal launch from the Finder or the Start menu does not
+  carry the marker this relies on, and a marker left behind by a program that has
+  since closed is ignored, so a real launch is never turned away.
+- In the packaged program joblib's default backend is threads. Its usual default
+  starts worker processes launched with `-m`, which a packaged program does not
+  read, and each would have come up as another window. Nothing in HABITUS asks for
+  them; a library calling `Parallel(n_jobs=-1)` with no preference would.
+- The packaging self-test has a new check, "Helper processes", that does what the
+  modelling does (a joblib thread pool, the resource tracker on macOS and Linux, a
+  `multiprocessing` worker pool, joblib's default backend) and fails if a copy of
+  the program appears. The check that examines the published macOS disk images
+  now also runs the app as a copy of a running HABITUS, against v1.1.0 as a
+  control, so that it can tell the two apart.
+
+**Confirmed by the reporter.** On the reporter's Mac, with v1.1.1, the second
+window no longer appears. One detail is not explained by the cause above: the
+reporter also saw it during a MaxEnt-only run, and a MaxEnt-only run from source
+created no multiprocessing lock. The fix does not depend on which code path starts
+the helper, since every helper is started the same way and every one is now
+handled.
+
+**Linux.** The same mechanism exists on Linux, which uses the same helper. It was
+not reported there and was not tested on v1.1.0; the new self-test check runs in
+the Linux build.
+
+**Tests.** 527 passed, 0 failed, 0 skipped, run in full on this tree; 14 of
+them are new, for the stray-copy guard.
+
+**Workaround for v1.1.0.** None that is simple; install v1.1.1.
+
+---
+
 ## v1.1.0 — 8 October 2026
 
 This release is mostly about **correctness**. Runs on the *Pinus brutia* sample
