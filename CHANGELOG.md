@@ -115,6 +115,34 @@ later (Ubuntu 22.04 and later); Ubuntu 20.04 is out of support and is not covere
 If you downloaded the Windows or Linux files before this date and the program does
 not start, download it again.
 
+### Large rasters: projection in strips (all platforms, 9 October 2026)
+
+Projecting onto a very large raster stopped with `ArrayMemoryError: Unable to
+allocate 763. MiB for an array with shape (100000000, 8) and data type bool`
+(reported for a 10,000 x 10,000 cell raster, 8 predictors). The cause was memory,
+not the raster format: the whole stack was held in memory at once, which for that
+size takes more than 25 GB, and the failing allocation was only the first of
+several that size.
+
+A raster of more than about four million cells is now projected in strips of
+rows (about two million cells each) and the strips are joined into the same
+files a single piece would give. Predictions, ExDet and MESS describe each cell
+on its own, so the result does not depend on where the cuts fall. Measured on
+this tree: the maps from a strip run and from a single run are identical cell for
+cell, with the same data type, nodata value, projection and tags, and the ExDet
+and MESS figures in the report are identical. Peak memory on a 9-million-cell
+raster fell from 0.74 GB to 0.35 GB; on a 36-million-cell raster the strip run
+peaked at 0.75 GB. A raster that is not on the training grid is aligned once,
+to a temporary file, before the strips are cut. The validity mask is also built
+one predictor at a time, so it no longer needs a cells-by-predictors boolean array.
+
+`HABITUS_PROJECTION_TILE_CELLS` sets the cells per strip (0 turns strips off).
+Not tested on a raster of 100 million cells. The range-change analysis still
+reads whole maps. Tests: 576 passed, 0 failed.
+
+The Windows, Linux and macOS files were replaced with this build, keeping the
+version number.
+
 ---
 
 ## v1.1.0 — 8 October 2026
