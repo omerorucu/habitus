@@ -217,7 +217,7 @@ The Windows builds are code-signed with an Authenticode certificate issued to th
 | Windows | Windows 10 or 11, 64-bit |
 | macOS, Apple Silicon | macOS 14 (Sonoma) or later |
 | macOS, Intel | macOS 15 (Sequoia) or later |
-| Linux | glibc 2.31 or later (Ubuntu 20.04 and later) |
+| Linux | glibc 2.35 or later (Ubuntu 22.04 and later) |
 
 8 GB RAM is recommended for high-resolution rasters on all platforms.
 
