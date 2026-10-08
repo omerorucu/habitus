@@ -1,4 +1,4 @@
-# HABITUS v1.0.3
+# HABITUS v1.1.0
 
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
@@ -7,7 +7,58 @@
 
 ---
 
-## What's new in v1.0.3
+## What's new in v1.1.0
+
+> **This release changes numbers, on purpose.** Runs on the *Pinus brutia*
+> sample data, set side by side with R packages, exposed errors that were silent.
+> They are fixed, and the scores that result are lower and honest. If you re-run
+> an earlier analysis, expect different values.
+
+**Results that change**
+
+- **Ensemble scores no longer leak.** They used to be scored on a map built from
+  models trained on every presence. They now come only from cross-validation
+  hold-out predictions: on the sample data the ensemble ROC went from 0.989 to
+  0.854 and TSS from 0.956 to 0.586.
+- **The test fold no longer picks its own threshold.** The threshold is chosen
+  on out-of-fold predictions of the training rows. Expect TSS to drop by roughly
+  0.05 to 0.15, and cross-validation to take about twice as long.
+- **The Boyce index follows `ecospat::ecospat.boyce`**, checked against R.
+- **Future rasters on a different grid** were silently stretched and shifted;
+  they are now aligned to the training grid, with a warning in the log and the
+  report.
+- **Categorical predictors** are encoded properly instead of entering models as
+  numbers.
+- **Default changes** for GBM, BRT, CatBoost, the minimum ensemble score and the
+  threshold source, each with its evidence in [CHANGELOG.md](CHANGELOG.md). The
+  old values can still be entered by hand.
+
+**New**
+
+- **Five more algorithms, 18 in all:** BIOCLIM, Domain, GLMNET, CART and ESM.
+- **More cross-validation designs** (checkerboard, jackknife, longitude and
+  latitude bands), a spatial sorting bias diagnostic, more thresholds and
+  metrics, MESS and MoD extrapolation surfaces, and a tuning panel (MaxEnt
+  regularisation by feature class, and grids for the other algorithms).
+- **A reorganised interface**, with the Evaluation tab after Models and fewer
+  scroll bars.
+
+**macOS**
+
+- **All 18 algorithms on both Apple Silicon and Intel**, MaxEnt included.
+- **The oldest macOS is now stated as the bundled libraries state it:** macOS 14
+  (Sonoma) on Apple Silicon and macOS 15 (Sequoia) on Intel. This page and the
+  application's metadata both said macOS 11. What an older system does when it
+  is allowed to try was not tested.
+
+**Known limits.** The evidence is **one species and one data set**, so the
+default changes and the comparison with R are not yet validated on other species
+or scales. PDF report generation was not tested. The full list is in
+[CHANGELOG.md](CHANGELOG.md).
+
+---
+
+## v1.0.3
 
 > **macOS is back, and MaxEnt now loads on it.** v1.0.2 shipped for Windows and
 > Linux only. This release brings macOS back as two disk images, one for each
@@ -117,7 +168,7 @@ Full detail, including what was deliberately left out, is in
 
 ## Overview
 
-HABITUS is a free, standalone desktop application for Species Distribution Modelling. It implements **13 algorithms** within an **eight-step guided workflow** — from raw occurrence data through variable selection, model training, future climate projection, range-change analysis, accuracy assessment and automated scientific report generation — without requiring R, QGIS or command-line tools.
+HABITUS is a free, standalone desktop application for Species Distribution Modelling. It implements **18 algorithms** within an **eight-step guided workflow** — from raw occurrence data through variable selection, model training, future climate projection, range-change analysis, accuracy assessment and automated scientific report generation — without requiring R, QGIS or command-line tools.
 
 Everything runs locally on your machine. No data leave your computer.
 
@@ -129,13 +180,13 @@ Installers are published on the [**latest release**](https://github.com/omeroruc
 
 | Platform | File | Description |
 |----------|------|-------------|
-| Windows | `HABITUS_Setup_v1.0.3.exe` | Installer (recommended) |
-| Windows | `HABITUS_v1.0.3_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
-| Linux | `HABITUS_v1.0.3_x86_64.AppImage` | Portable — `chmod +x` then run |
-| Linux | `HABITUS_Setup_v1.0.3_Linux_x64.tar.gz` | Archive, extract and run |
-| macOS (Apple Silicon) | `HABITUS_Setup_v1.0.3_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
-| macOS (Intel) | `HABITUS_Setup_v1.0.3_macOS_x86_64.dmg` | Disk image for Intel Macs |
-| All | `habitus_sample.zip` | Sample dataset: *Pinus brutia*, 108 records, 23 predictors, and the calibration-polygon and absence files for trying the v1.0.2 features |
+| Windows | `HABITUS_Setup_v1.1.0.exe` | Installer (recommended) |
+| Windows | `HABITUS_v1.1.0_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| Linux | `HABITUS_v1.1.0_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v1.1.0_Linux_x64.tar.gz` | Archive, extract and run |
+| macOS (Apple Silicon) | `HABITUS_Setup_v1.1.0_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
+| macOS (Intel) | `HABITUS_Setup_v1.1.0_macOS_x86_64.dmg` | Disk image for Intel Macs |
+| All | `habitus_sample.zip` | Sample dataset: *Pinus brutia*, 108 records, 23 predictors, and the calibration-polygon and absence files for trying the calibration-area and absence-data features |
 
 The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk images are signed with the developer's Apple Developer ID certificate and notarised by Apple, so Gatekeeper opens them without an unidentified-developer warning.
 
@@ -155,7 +206,7 @@ The Windows builds are code-signed with an Authenticode certificate issued to th
 ## Features
 
 ### Modelling
-- **13 SDM algorithms** — GLM, GBM, BRT, RF, SVM, ANN, XGBoost, LightGBM, CatBoost, GAM, MaxEnt, ENFA, Mahalanobis Distance
+- **18 SDM algorithms** — GLM, GLMNET, GBM, BRT, RF, SVM, ANN, XGBoost, LightGBM, CatBoost, GAM, CART, MaxEnt, ENFA, Mahalanobis Distance, BIOCLIM, Domain, ESM
 - **Pseudo-absence generation** — random, disk exclusion and surface range envelope strategies, with independent settings for machine-learning, MaxEnt and presence-only algorithms
 - **Stratified train/test split** — presence and background points split separately
 - **Ensemble modelling** — performance-weighted mean and committee averaging
