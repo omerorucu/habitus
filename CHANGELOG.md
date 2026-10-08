@@ -77,7 +77,7 @@ them are new, for the stray-copy guard.
 
 **Workaround for v1.1.0.** None that is simple; install v1.1.1.
 
-### Windows files re-issued under the same version (8 October 2026)
+### Windows and Linux files re-issued under the same version (8 October 2026)
 
 The Windows installer and the portable ZIP of v1.1.1 were replaced, keeping the
 version number, with a build that fixes a start-up crash: on a machine that still
@@ -93,18 +93,27 @@ v1.1.1 by starting it the way Explorer does, with a `patches` folder beside it;
 the replacement was started the same way and opened normally. Whether the
 reporter's own machine had such a folder was not established.
 
-The macOS and Linux files were not replaced, because the same fault was measured
-on them and is narrower. The published v1.1.1 was started on a macOS 14, a
-macOS 15 (Intel) and an Ubuntu 24.04 machine, with and without a leftover
-`patches` folder and with standard error open or closed. It stops only when the
-folder exists *and* the program is started with no standard error at all (file
-descriptor 2 closed). With standard error open, which is what a launcher gives a
-program, it starts normally and prints the warning; on macOS it also starts
-normally when opened the way the Finder opens it. The Windows case is wider
-because a program started from Explorer has no standard error at all. The fix is
-in the source and will be in the next build of the macOS and Linux files. If you
-downloaded the Windows installer before this date and the program does not
-start, download it again.
+The macOS files were not replaced, because the same fault was measured on them
+and is narrower. The published v1.1.1 was started on a macOS 14, a macOS 15
+(Intel) and an Ubuntu 24.04 machine, with and without a leftover `patches` folder
+and with standard error open or closed. It stops only when the folder exists *and*
+the program is started with no standard error at all (file descriptor 2 closed).
+With standard error open, which is what a launcher gives a program, it starts
+normally and prints the warning; on macOS it also starts normally when opened the
+way the Finder opens it. The Windows case is wider because a program started from
+Explorer has no standard error at all. The fix is in the source and will be in
+the next build of the macOS files.
+
+The Linux files were replaced too, and for a second reason found while measuring:
+the first Linux build did not start on Ubuntu 22.04 at all (`GLIBC_2.38 not
+found`). It had been built on Ubuntu 24.04, and a program needs the C library of
+the system it was built on or newer, while the README said Ubuntu 20.04 and later.
+The Linux files are now built on Ubuntu 22.04, which also brings the start-up fix.
+The published files were started on Ubuntu 22.04 and 24.04, in all four
+combinations above, and ran in every one. The README now states glibc 2.35 or
+later (Ubuntu 22.04 and later); Ubuntu 20.04 is out of support and is not covered.
+If you downloaded the Windows or Linux files before this date and the program does
+not start, download it again.
 
 ---
 
