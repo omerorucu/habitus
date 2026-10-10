@@ -4,6 +4,161 @@ All notable changes to HABITUS are recorded here.
 
 ---
 
+## v1.1.2 — 10 October 2026
+
+A review of v1.1.1 against its own manuals found code that did not do what the
+notes said, and numbers that were computed from the wrong place. This release
+fixes them. **Use v1.1.2 in place of v1.1.1.** Everything in v1.1.1 (the macOS
+window fix, the Windows start-up fix, projection of large rasters in strips) is
+in it.
+
+### Corrections to what v1.1.0 and v1.1.1 said
+
+- **The ensemble options listed as new in v1.1.0 could not be chosen.** Median,
+  mean of the supported models (`meansup`), mean over a threshold (`meanthr`),
+  the weight statistic and its power, and the CV and range uncertainty maps
+  existed in the code, but the tab that holds their controls was never added to
+  the window. The "Combining method" selector did not change which maps were
+  written either. The controls are now in Models, under Algorithm Settings,
+  "Combining Results & Binary Threshold Method", and the selector decides what is
+  computed, written and scored. The default is "Both", so a run that does not
+  touch it gives the same maps as before.
+- **"The numbers are lower and honest" claimed too much.** Removing the leaks in
+  v1.1.0 did lower the scores, and that stands. It did not make every score free
+  of optimism: a tuned setting is still picked from the same cross-validation
+  scores that are then reported, and no nested validation is done. The size of
+  that optimism has not been measured. The Tuning tab, the report (7.2) and the
+  ODMAP export now say so.
+- **Mahalanobis regularisation was 0, not 1e-6.** The box showed 1e-6, but it
+  was given its default before its number of decimals was set, so the default
+  was rounded to 0.0 and the model was fitted with no regularisation. This was
+  so in v1.1.0 and v1.1.1 whenever the box was left alone; a value typed in was
+  kept. The default now reaches the model.
+
+### Results that change
+
+- **Results no longer depend on the order in which the predictor rasters were
+  added or ticked.** The columns of the model matrix followed that order, and the
+  order decides which columns a random forest samples, the pairs ESM builds, how
+  MaxEnt sets up its features, the axes of ENFA and Mahalanobis, and the last bit
+  of a sum in GLM. Repeating one analysis with the same rasters added in two
+  orders gave different scores: on the sample data (18 algorithms, 182 rows of
+  scores) only 110 rows agreed on ROC, and the largest differences were 0.085 in
+  ROC, 0.25 in TSS and 0.80 in Boyce. Variables now use one natural-name order
+  (bio_3, bio_4, bio_12) from loading to projection, and the two orders give
+  the same scores (181 of 182 rows identical, all 182 within 1e-9; the remaining
+  row is a random forest, below). **A run that was already added in natural order
+  is unchanged. A run added in another order gives different numbers when it is
+  repeated.** The Variables list and the Models and Projection banners are now
+  in this order too. Projection rasters whose file names equal the model's
+  variable names are matched by name; any other set is matched by position, in
+  the order the banner shows.
+- **Mahalanobis (MAHAL)** results, for the reason above, if the default was used.
+- **Evaluation: Omission & PR, Boyce detail and Thresholds** are now computed from
+  the cross-validation hold-out predictions, as the ROC curves already were. They
+  came from pooled rows, rows the model was trained on, or rows split again at
+  random. The threshold used for mapping is still found on the Full model's
+  training data and is labelled so; the hold-out TSS at that threshold is shown
+  beside it. The table gains `<method>_holdout_Sens`, `_Spec`, `_TSS`,
+  `used_holdout_TSS` and `holdout_n_folds` columns (the old columns are where they
+  were), and `evaluation_omission_pr_calibration.csv` is new.
+- **Validation** aligns the reference raster to the model grid by position. A
+  reference one cell off used to be stretched to the model's shape, shifting it
+  silently. On the same grid the read is bit-for-bit what it was. Random and
+  stratified sampling now use a generator derived from the run seed and no longer
+  touch NumPy's global state, so random-mode values differ from before and repeat
+  exactly.
+- **MESS truncation** now also masks the ensemble spread maps (EMsd, EMcv,
+  EMrange), which carried values in cells with MESS below 0.
+- **Categorical rasters** are checked against the training grid like the
+  continuous ones. A categorical raster of another size used to stop with a bare
+  `IndexError`, and one of the same size but shifted was matched to the wrong
+  cells without a word. Both now stop with the "not on the same grid" error. No
+  automatic alignment is done at training time, as for the continuous layers.
+
+### Changed
+
+- The **response curve "ice"** is now a real ICE plot: about 60 rows, each with
+  the other variables held at that row's own values, with the partial dependence
+  curve drawn over them as their mean. It used to be a partial dependence curve
+  computed from 200 rows and described as per-sample curves.
+- `habitus_run_config.json` compares the minimum ensemble score with the default
+  of the metric chosen (ROC 0.70, TSS 0.40, Boyce 0.50) and not with a fixed 0.6.
+  The report states the correlation threshold, method and VIF threshold actually
+  set in the Variables tab, and no longer a fixed "|r| > 0.75".
+- Help > About shows the version of the program (it said v1.0.0), and no longer
+  shows the text `{UPDATE_BANNER}` when the update check is off or has no network.
+- Long jobs (data loading, models, projection, range change, tuning, validation,
+  report) disable their Run button while they run, so they cannot be started
+  twice, and enable it again when the job ends, whether it succeeds, fails or is
+  cancelled. The progress bar only moves forward; it ends green with "Done" or red
+  with "Failed". Before, the engine's log messages sent it back to zero about
+  sixty times during one run, and one step set it to 100 before the run was over.
+  The same was not done for the Variables analysis, Advanced analysis, the ODMAP
+  export and Refresh.
+- Models no longer says the maps were "auto-loaded to QGIS" (HABITUS has no QGIS);
+  it says they are shown in the map viewer.
+- **Evaluation > Save All Charts is about seven times faster** on real data
+  (773 s to 102 s, 18 algorithms, 40 files, measured on a busy machine). It
+  computed the response curves of all algorithms for each one it drew and wrote
+  every figure twice. It now computes one algorithm at a time, once, writes each
+  file once, keeps the window answering and can be cancelled. **It still freezes
+  the window for up to about eight seconds at a time**, while one 300-dpi figure
+  is written; that was not removed.
+- The variable-importance legend no longer covers the bars. Scrolling Evaluation
+  pages have a scroll bar that is always visible and a hint to scroll. The
+  Validation result box is taller, has a scroll bar and is brought into view when
+  a result is written.
+- The **absence class** (pseudo, observed or mixed) is named next to every
+  statistic that depends on it, with one paragraph in the methods saying that
+  TSS, kappa, MCC, sensitivity, specificity, Jaccard, Sorensen, FPB, prevalence,
+  Brier and calibration, and the omission rates tied to a threshold, rest on
+  pseudo-absences or background and should not be read as absolute values.
+- **Range change** is computed in strips of rows, so it no longer reads whole
+  maps. On the sample data the output is identical (same SHA-256).
+- Many table and figure fixes found on screenshots: cells that cut off long file
+  names, the Model Scores figure whose labels overlapped with 18 algorithms, the
+  Thresholds cells, the map redrawn at the wrong size when its tab was shown, and
+  others. They change how the program looks, not what it computes.
+
+### New
+
+- **ODMAP export** (Report tab, "Export ODMAP protocol"): writes
+  `odmap_protocol.md` and `.csv`, with the elements of Table 1 of Zurell et al.
+  (2020) filled in from the run record where HABITUS has the information. Each
+  row says whether it was filled in automatically or is left to the author. It is
+  **not a complete ODMAP protocol**: what HABITUS does not record (authors,
+  hypotheses, data sources, time span, independent test data and so on) is marked
+  "Not recorded by HABITUS" and is not invented.
+- A **sampling-bias advisory** when no target-group records or bias surface were
+  supplied. It is a note in the Data log, the run record and the report (7.2);
+  sampling and results are unchanged.
+- **A tuning selection-bias notice**, as described above.
+
+### Not done
+
+- Nested (inner/outer) validation of tuning. Until it exists, scores of a tuned
+  algorithm should be read as optimistic.
+- **Still one species and one data set** (*Pinus brutia*). The default changes
+  and the comparison with R in v1.1.0 are not validated on other species or
+  scales, and the differences from R for ANN, GLM and SVM (AUC +0.079, +0.046,
+  +0.044) are reported without an explanation of their cause.
+- A random forest fitted with all cores does not give bit-for-bit the same
+  numbers on two runs, because the trees' probabilities are added in a different
+  order each time. On real data the differences are about 1e-16; with tied scores
+  they moved ROC by about 2e-4 in a small synthetic test. Not fixed.
+- Boyce and the omission rate tied to a threshold remain noisy with small
+  samples (fold standard deviation 0.2 to 0.4).
+- Projection of a raster of 100 million cells has not been run (the largest tried
+  was 36 million).
+
+### Checked
+
+- 707 passed, 0 failed, run in full on this tree (also run without PyQt6 and elapid, as the automatic checks do, with the tests that need them skipped); `ruff check .` reports no errors.
+- The Windows, Linux and macOS files were built from this tree.
+
+---
+
 ## v1.1.1 — 8 October 2026
 
 One defect, reported on macOS after v1.1.0, with a second copy of the program
