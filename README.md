@@ -1,4 +1,4 @@
-# HABITUS v1.1.1
+# HABITUS v1.1.2
 
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
@@ -7,11 +7,50 @@
 
 ---
 
-## What's new in v1.1.1
+## What's new in v1.1.2
 
-> **Earlier releases are no longer offered for download.** v1.0.0 to v1.0.2 and
-> v1.1.0 each carry faults that are fixed here; the details are in
-> [CHANGELOG.md](CHANGELOG.md). Please use v1.1.1.
+> **Use v1.1.2 in place of every earlier release.** v1.0.0 to v1.0.2, v1.1.0
+> and v1.1.1 are no longer offered for download: they carry faults that are fixed
+> here, and some of what their notes said did not match what the program did. The
+> details are in [CHANGELOG.md](CHANGELOG.md).
+
+**Numbers that change**
+
+- **Results no longer depend on the order in which the predictor rasters were
+  added.** Two orders now give the same scores (181 of 182 rows identical, all
+  within 1e-9). Before, only 110 of 182 rows agreed on ROC, and the largest
+  difference was 0.085. A run that was already added in natural order is
+  unchanged; one added in another order gives different numbers when repeated.
+- **Mahalanobis** was fitted with a regularisation of 0 instead of 1e-6 in
+  v1.1.0 and v1.1.1 when the box was left at its default.
+- **Evaluation** (Omission & PR, Boyce detail, Thresholds) is computed from the
+  cross-validation hold-out predictions, and **Validation** aligns its reference
+  raster by position, with seeded random sampling.
+
+**Corrections to earlier notes**
+
+- The ensemble options listed as new in v1.1.0 (median, meansup, meanthr, weight
+  statistic, uncertainty maps) could not be chosen in the interface. They are in
+  Models now.
+- "Lower and honest" claimed too much: a tuned setting is still picked from the
+  scores that are then reported, with no nested validation. Tuning, the report
+  and the ODMAP export now say so.
+
+**Also new**
+
+- An ODMAP export that fills in what HABITUS records (it is not a complete
+  protocol), a sampling-bias advisory, and a note on what the absence class is
+  next to every absence-dependent metric.
+- Save All Charts is about seven times faster; Run buttons are disabled while a
+  job runs; range change and large-raster projection run in strips of rows.
+
+**Limits.** Evidence is still one species and one data set. Nested validation of
+tuning is not done. A random forest on all cores does not repeat bit for bit
+(differences of about 1e-16). A raster of 100 million cells has not been run.
+
+---
+
+## v1.1.1
 
 **A second HABITUS window no longer opens in the middle of a model run (macOS).**
 While models were running, a second copy of the program, with its own splash
@@ -200,12 +239,12 @@ Installers are published on the [**latest release**](https://github.com/omeroruc
 
 | Platform | File | Description |
 |----------|------|-------------|
-| Windows | `HABITUS_Setup_v1.1.1.exe` | Installer (recommended) |
-| Windows | `HABITUS_v1.1.1_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
-| Linux | `HABITUS_v1.1.1_x86_64.AppImage` | Portable — `chmod +x` then run |
-| Linux | `HABITUS_Setup_v1.1.1_Linux_x64.tar.gz` | Archive, extract and run |
-| macOS (Apple Silicon) | `HABITUS_Setup_v1.1.1_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
-| macOS (Intel) | `HABITUS_Setup_v1.1.1_macOS_x86_64.dmg` | Disk image for Intel Macs |
+| Windows | `HABITUS_Setup_v1.1.2.exe` | Installer (recommended) |
+| Windows | `HABITUS_v1.1.2_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| Linux | `HABITUS_v1.1.2_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v1.1.2_Linux_x64.tar.gz` | Archive, extract and run |
+| macOS (Apple Silicon) | `HABITUS_Setup_v1.1.2_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
+| macOS (Intel) | `HABITUS_Setup_v1.1.2_macOS_x86_64.dmg` | Disk image for Intel Macs |
 | All | `habitus_sample.zip` | Sample dataset: *Pinus brutia*, 108 records, 23 predictors, and the calibration-polygon and absence files for trying the calibration-area and absence-data features |
 
 The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk images are signed with the developer's Apple Developer ID certificate and notarised by Apple, so Gatekeeper opens them without an unidentified-developer warning.
