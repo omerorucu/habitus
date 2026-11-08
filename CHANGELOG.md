@@ -4,6 +4,102 @@ All notable changes to HABITUS are recorded here.
 
 ---
 
+## v2.0.0 — 8 November 2026
+
+### New
+
+- **Predictor folder.** "Add Folder…" in ① Data adds every raster of a folder
+  (bioclimatic and other environmental layers together) and sorts each into
+  Continuous or Categorical from its values: a colour table or a small number
+  of integer values (30 or fewer) means classes, decimals or many distinct
+  values mean a measured surface. The reason is shown for every file, and a
+  file whose name points the other way (an NDVI stored as eleven classes) is
+  marked for checking. "→ Categorical" / "→ Continuous" move a file that was
+  sorted wrongly. Bioclimatic files (bio1, bio_ (12), wc2.1_30s_bio_5,
+  CHELSA_bio10) are sorted by name without reading their values, so a folder
+  of 30-arc-second world layers is listed in seconds; the folder is read in
+  the background with a progress window that can be cancelled. When the
+  added rasters include large ESRI ASCII grids (.asc, 200 MB or more), HABITUS
+  offers to convert them once to compressed GeoTIFF copies (same values and
+  coordinate system, in a `geotiff` sub-folder): an .asc is text and is parsed
+  from the top at every step, a GeoTIFF is read window by window.
+- **Study boundary.** The rasters no longer have to be cut to the study area
+  beforehand: whole-world layers, or layers cut to any larger area, can be used
+  as they are. A boundary given as a polygon layer (SHP, GPKG, KML, GeoJSON) or
+  as corner coordinates becomes the study area. Every predictor is clipped to
+  it and every cell outside it becomes NoData, so records, pseudo-absences,
+  background, cross-validation folds, the current map, future scenarios and
+  range change are all computed inside the boundary. Future-scenario rasters
+  are clipped to the same boundary when they are projected. Only the window
+  covering the boundary is read, so a 30-arc-second world layer is not loaded
+  whole. The clipped copies are in `masked_inputs/`; the boundary is recorded
+  in `habitus_run_config.json`.
+- **Several species in one occurrence file.** When the first column holds more
+  than one species, ① Data lists them with a tick box each. Each ticked species
+  is modelled on its own, in its own sub-folder, with only its records (written
+  there as `occurrences_used.csv`). After the workflow has been completed for
+  one species, "Run Selected Species…" in ⑧ Report repeats it with the same
+  settings (variables, models, scenarios, range change, report) for the others
+  and writes `batch_summary.csv`.
+- **Map tab.** The occurrence records on OpenStreetMap, one colour per
+  species, with the user's own absences, the study boundary, the calibration
+  area and, after ① Data has run, the occurrence records excluded before
+  modelling with the reason in the popup.
+- **Study-area figure.** "Save study-area figure…" in the Map tab draws the
+  ticked layers (boundary, calibration area, occurrences, excluded
+  occurrences, absences) on Natural Earth countries, with a locator inset,
+  scale bar, north arrow and degree labels, ready for a manuscript. The
+  countries (1:10m and 1:50m, public domain) are bundled, so no network is
+  needed. Records on both sides of 180° (Fiji, the Aleutians) are drawn as
+  one region across the antimeridian, not as a strip around the globe.
+- **Maps saved at journal size.** Saving a current, future or range-change
+  map now asks for a column width (85, 120 or 174 mm), a resolution (300, 600
+  or 1200 dpi) and whether the title is drawn, and draws the map again at that
+  size: Arial 7–9 pt, thin lines, white background, degree labels, the point
+  legend below the map instead of over it, and a height that follows the
+  map's own shape. PNG, TIFF (LZW), PDF, SVG and EPS; fonts are embedded in
+  the vector formats. Before, the figure on screen was copied as it was, so
+  text and markers were oversized and the background was tinted.
+- **Map titles can be edited.** "Title…" above every map sets the title and
+  subtitle (or hides them) and whether the title is italic, layer by layer.
+
+### Changed
+
+- **GLM penalty documented and its range widened.** A comparison with R on the
+  same training table and the same folds (Pinus brutia, 8 runs) traced the
+  whole GLM difference to the ridge penalty: HABITUS's default (C = 1,
+  quadratic terms) gave a cross-validated AUC of 0.824; the same model without
+  a penalty gave 0.804, against 0.802 for flexsdm::fit_glm (poly = 2); linear
+  and unpenalised gave 0.779, against 0.778 for sdm::glm. SVM (0.781 vs 0.783)
+  and ANN (0.780 vs 0.775) agree with flexsdm. The default is unchanged; C can
+  now be set up to 1e6, which reproduces R's unpenalised glm().
+- **Whole-degree temperatures are flagged.** A temperature layer stored as
+  integers (for example −12 … 7 °C) has few distinct values and is sorted as
+  classes; it is now marked for checking when its name suggests a temperature
+  (tave, tmean) or when it has many values for a class layer.
+
+### Fixed
+
+- **Maps filled only part of the viewer on scaled displays.** With Windows
+  display scaling above 100 %, the map was laid out for a figure smaller than
+  the viewer and sat in the middle of an empty area; the subtitle could also
+  overlap the top latitude label.
+- **Robustness of the new features** (a break-it run of 481 deliberately bad
+  inputs before release). Two predictor rasters with the same file name are
+  refused instead of overwriting each other in `masked_inputs/`; a raster
+  that is unreadable or has no data inside the study boundary is named in the
+  message instead of failing deep in GDAL or giving an empty layer; species
+  sub-folders stay separate when names differ only in case and never point
+  outside the output folder ("..", device names, very long names); the Map
+  tab explains a CSV with the wrong delimiter, column count or encoding, and a
+  single unprojectable record no longer leaves all the others in metres;
+  saved maps keep the chosen column width with long titles or many legend
+  entries, draw projected rasters with metre labels and a metric scale bar,
+  and treat "$" in a title as text; the batch run releases its button and
+  message boxes even when the summary file is locked.
+
+---
+
 ## v1.1.2 — 10 October 2026
 
 A review of v1.1.1 against its own manuals found code that did not do what the
