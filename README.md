@@ -1,4 +1,4 @@
-# HABITUS v2.0.0
+# HABITUS v1.1.2
 
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
@@ -7,57 +7,12 @@
 
 ---
 
-## What's new in v2.0.0
+## What's new in v1.1.2
 
-**Working with large and whole-world predictors**
-
-- **Predictor folder.** "Add Folder…" in ① Data adds every raster of a folder
-  and sorts each into Continuous or Categorical, with the reason shown for every
-  file. Bioclimatic layers are recognised by name, so a folder of 30-arc-second
-  world layers is listed in seconds. Large ESRI ASCII grids can be converted
-  once to compressed GeoTIFF copies, which are read window by window.
-- **Study boundary.** Rasters no longer have to be cut to the study area first.
-  A polygon layer (SHP, GPKG, KML, GeoJSON) or corner coordinates become the
-  study area; only the window covering it is read, and records, background,
-  folds, current and future maps and range change are all computed inside it.
-
-**More than one species**
-
-- When the occurrence file holds several species, each ticked species is
-  modelled on its own, in its own sub-folder. "Run Selected Species…" in
-  ⑧ Report repeats the completed workflow for the others and writes
-  `batch_summary.csv`.
-
-**Figures for a manuscript**
-
-- **Map tab.** Occurrence records on OpenStreetMap, with absences, the study
-  boundary, the calibration area and the records excluded before modelling.
-- **Study-area figure.** Boundary, records and absences on Natural Earth
-  countries, with a locator inset, scale bar and north arrow (bundled, no
-  network needed).
-- **Maps saved at journal size.** Current, future and range-change maps are
-  drawn again at 85, 120 or 174 mm and 300–1200 dpi, in PNG, TIFF, PDF, SVG or
-  EPS. Map titles can be edited or hidden.
-
-**Changed.** The GLM ridge penalty is now documented: on the same training
-table and folds as R, HABITUS's default (C = 1) gave a cross-validated AUC of
-0.824 against 0.804 without a penalty (flexsdm 0.802). C can now be set up to
-1e6, which reproduces R's unpenalised glm(). The default is unchanged.
-
-**Robustness.** Before release the new features were given 481 deliberately bad
-inputs (duplicate raster names, rasters with no data inside the boundary,
-malformed CSV files, unusual species names, records across 180°); each now gives
-a readable message instead of failing silently or deep inside a library.
-
-The full list is in [CHANGELOG.md](CHANGELOG.md).
-
----
-
-## v1.1.2
-
-> v1.0.0 to v1.0.2, v1.1.0 and v1.1.1 are no longer offered for download: they
-> carry faults that were fixed in v1.1.2. The details are in
-> [CHANGELOG.md](CHANGELOG.md).
+> **Use v1.1.2 in place of every earlier release.** v1.0.0 to v1.0.2, v1.1.0
+> and v1.1.1 are no longer offered for download: they carry faults that are fixed
+> here, and some of what their notes said did not match what the program did. The
+> details are in [CHANGELOG.md](CHANGELOG.md).
 
 **Numbers that change**
 
@@ -284,12 +239,12 @@ Installers are published on the [**latest release**](https://github.com/omeroruc
 
 | Platform | File | Description |
 |----------|------|-------------|
-| Windows | `HABITUS_Setup_v2.0.0.exe` | Installer (recommended) |
-| Windows | `HABITUS_v2.0.0_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
-| Linux | `HABITUS_v2.0.0_x86_64.AppImage` | Portable — `chmod +x` then run |
-| Linux | `HABITUS_Setup_v2.0.0_Linux_x64.tar.gz` | Archive, extract and run |
-| macOS (Apple Silicon) | `HABITUS_Setup_v2.0.0_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
-| macOS (Intel) | `HABITUS_Setup_v2.0.0_macOS_x86_64.dmg` | Disk image for Intel Macs |
+| Windows | `HABITUS_Setup_v1.1.2.exe` | Installer (recommended) |
+| Windows | `HABITUS_v1.1.2_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| Linux | `HABITUS_v1.1.2_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v1.1.2_Linux_x64.tar.gz` | Archive, extract and run |
+| macOS (Apple Silicon) | `HABITUS_Setup_v1.1.2_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
+| macOS (Intel) | `HABITUS_Setup_v1.1.2_macOS_x86_64.dmg` | Disk image for Intel Macs |
 | All | `habitus_sample.zip` | Sample dataset: *Pinus brutia*, 108 records, 23 predictors, and the calibration-polygon and absence files for trying the calibration-area and absence-data features |
 
 The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk images are signed with the developer's Apple Developer ID certificate and notarised by Apple, so Gatekeeper opens them without an unidentified-developer warning.
