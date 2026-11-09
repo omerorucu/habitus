@@ -4,6 +4,45 @@ All notable changes to HABITUS are recorded here.
 
 ---
 
+## v2.0.1 — 9 November 2026
+
+One defect: distances were wrong when the predictor rasters are in a projected
+coordinate system (UTM, Albers, Lambert and so on, with coordinates in metres).
+Rasters in longitude/latitude are not affected, and their results do not change.
+
+### Distances on projected rasters
+
+**Cause.** The distance calculations work on longitude and latitude. With a
+projected raster the occurrence coordinates are metres, and they were passed in
+unchanged, so a coordinate of 500 000 m was read as 500 000 degrees. Found while
+reproducing a published model on a UTM grid (10 km cells): a 200 km accessible
+area kept only the presence cells (0.3% of the grid) and the program fell back
+to the whole extent with a warning; the largest distance between two records
+came out as 17 908 km instead of 1 332 km.
+
+**What it affected (projected rasters only).**
+
+- Accessible area (buffer): the buffer collapsed to the record cells.
+- Background exclusion distance around presences (disk strategy).
+- Spatial autocorrelation range, and with it the automatic thinning distance
+  and the automatic block size.
+- Spatial thinning (10 km thinning kept 78 of 324 records; correct: 285).
+- Spatial block, checkerboard and longitude/latitude band cross-validation,
+  and the spatial sorting bias (SSB) diagnostic.
+- Bias surface from target-group records when a bandwidth in km is given.
+
+**What was changed.** Record and cell coordinates on a projected raster are
+converted to longitude/latitude before any distance is taken; values are still
+read from the rasters at the original coordinates. The accessible-area mask
+uses the cell size in metres, and a km bandwidth of the bias surface is
+converted with the map unit of the raster. Four new tests.
+
+**Results that change.** Runs on projected rasters that used any of the options
+above. Cross-validation scores, thinned record sets and background samples of
+such runs can differ from v2.0.0.
+
+---
+
 ## v2.0.0 — 8 November 2026
 
 ### New
