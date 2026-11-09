@@ -1,9 +1,22 @@
-# HABITUS v2.0.0
+# HABITUS v2.0.1
 
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.txt)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://github.com/omerorucu/habitus/releases/latest)
+
+---
+
+## What's new in v2.0.1
+
+One correction. With predictor rasters in a projected coordinate system (UTM,
+Albers, Lambert, coordinates in metres) the record coordinates were read as
+degrees, so every distance-based step was wrong: the accessible-area buffer,
+the background exclusion distance, the autocorrelation range, spatial thinning,
+spatial block, checkerboard and band cross-validation, the SSB diagnostic, and
+a bias surface with a bandwidth in km. Coordinates are now converted to
+longitude/latitude before distances are taken. Rasters in longitude/latitude
+are not affected. Details in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -284,12 +297,12 @@ Installers are published on the [**latest release**](https://github.com/omeroruc
 
 | Platform | File | Description |
 |----------|------|-------------|
-| Windows | `HABITUS_Setup_v2.0.0.exe` | Installer (recommended) |
-| Windows | `HABITUS_v2.0.0_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
-| Linux | `HABITUS_v2.0.0_x86_64.AppImage` | Portable — `chmod +x` then run |
-| Linux | `HABITUS_Setup_v2.0.0_Linux_x64.tar.gz` | Archive, extract and run |
-| macOS (Apple Silicon) | `HABITUS_Setup_v2.0.0_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
-| macOS (Intel) | `HABITUS_Setup_v2.0.0_macOS_x86_64.dmg` | Disk image for Intel Macs |
+| Windows | `HABITUS_Setup_v2.0.1.exe` | Installer (recommended) |
+| Windows | `HABITUS_v2.0.1_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| Linux | `HABITUS_v2.0.1_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v2.0.1_Linux_x64.tar.gz` | Archive, extract and run |
+| macOS (Apple Silicon) | `HABITUS_Setup_v2.0.1_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
+| macOS (Intel) | `HABITUS_Setup_v2.0.1_macOS_x86_64.dmg` | Disk image for Intel Macs |
 | All | `habitus_sample.zip` | Sample dataset: *Pinus brutia*, 108 records, 23 predictors, and the calibration-polygon and absence files for trying the calibration-area and absence-data features |
 
 The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk images are signed with the developer's Apple Developer ID certificate and notarised by Apple, so Gatekeeper opens them without an unidentified-developer warning.
