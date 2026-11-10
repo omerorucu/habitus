@@ -1,9 +1,24 @@
-# HABITUS v2.0.1
+# HABITUS v2.0.2
 
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.txt)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://github.com/omerorucu/habitus/releases/latest)
+
+---
+
+## What's new in v2.0.2
+
+Occurrence records are reduced to one per predictor cell by default (records
+sharing a cell repeat the same predictor values), and spatial thinning gains
+two presets. A step that cannot be carried out now stops the run with a message
+or says what was done instead; before, several were replaced by a different
+step without notice. An accessible area with fewer cells than the number of
+background points requested uses all of its cells (Phillips & Dudík 2008)
+instead of falling back to the whole extent. Whole-world predictors are read
+within the memory of an ordinary computer, and the Linux packages start the
+program correctly. Results change for any occurrence file in which two or more
+records fall in the same predictor cell. Details in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -297,12 +312,12 @@ Installers are published on the [**latest release**](https://github.com/omeroruc
 
 | Platform | File | Description |
 |----------|------|-------------|
-| Windows | `HABITUS_Setup_v2.0.1.exe` | Installer (recommended) |
-| Windows | `HABITUS_v2.0.1_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
-| Linux | `HABITUS_v2.0.1_x86_64.AppImage` | Portable — `chmod +x` then run |
-| Linux | `HABITUS_Setup_v2.0.1_Linux_x64.tar.gz` | Archive, extract and run |
-| macOS (Apple Silicon) | `HABITUS_Setup_v2.0.1_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
-| macOS (Intel) | `HABITUS_Setup_v2.0.1_macOS_x86_64.dmg` | Disk image for Intel Macs |
+| Windows | `HABITUS_Setup_v2.0.2.exe` | Installer (recommended) |
+| Windows | `HABITUS_v2.0.2_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| Linux | `HABITUS_v2.0.2_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v2.0.2_Linux_x64.tar.gz` | Archive, extract and run |
+| macOS (Apple Silicon) | `HABITUS_Setup_v2.0.2_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
+| macOS (Intel) | `HABITUS_Setup_v2.0.2_macOS_x86_64.dmg` | Disk image for Intel Macs |
 | All | `habitus_sample.zip` | Sample dataset: *Pinus brutia*, 108 records, 23 predictors, and the calibration-polygon and absence files for trying the calibration-area and absence-data features |
 
 The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk images are signed with the developer's Apple Developer ID certificate and notarised by Apple, so Gatekeeper opens them without an unidentified-developer warning.
