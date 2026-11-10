@@ -4,6 +4,276 @@ All notable changes to HABITUS are recorded here.
 
 ---
 
+## v2.0.2 — 10 November 2026
+
+Occurrence records are reduced to one per predictor cell by default, and
+spatial thinning gains two presets. Variable recommendation, spatial block
+folds, the fewest presences a model is fitted from, and LASSO/Ridge in
+Advanced Analysis are revised. A step that cannot be carried out now stops
+the run or says what was done instead; before, several were replaced by a
+different step without notice. Whole-world predictors are read within the
+memory of an ordinary computer, and the Linux packages start the program
+correctly. Results change for any occurrence file in which two or more
+records fall in the same predictor cell.
+
+### One record per raster cell (new default)
+
+**Cause.** ① Data removed only records with exactly the same coordinates.
+Records a few metres apart, which is how a much-visited site appears in GBIF
+and other aggregated data, all stayed in, although every one of them falls in
+the same predictor cell and carries the same predictor values. Each extra
+record is a copy of the first: it adds weight to that cell without adding
+information. The message "no duplicates" made it look as if the records had
+been checked for this. Found on GBIF records of a Mediterranean fir: 628
+records fell in 31 cells, one of them holding 226; one cross-validation fold
+received 606 of the presences and the others 7 or 8.
+
+**What was changed.**
+
+- ① Data has a new option, *Keep one record per raster cell*, on by default.
+  The first record of each cell, in file order, is kept; the others are listed
+  among the excluded records with the reason "same raster cell as another
+  record", shown on the Map tab, and counted in the log, the report, the run
+  record (`points_dropped_by_reason`, `one_record_per_cell`) and the ODMAP
+  export. It is applied before thinning.
+- With the option off, the number of records that share a cell is stated in
+  the processing notices.
+- An external test set is evaluated as supplied; the option applies to the
+  training records only.
+
+### Thinning distance
+
+- **Fixed distances.** Besides a distance typed by the user and the automatic
+  distance from the variogram, ① Data offers *One cell* (the predictor
+  resolution at the records' mean latitude) and *10 km*, the distance used by
+  Boria et al. (2014, doi:10.1016/j.ecolmodel.2013.12.012). Neither is a rule
+  for every species; the distance used and how it was chosen are recorded.
+- A typed distance smaller than one predictor cell is pointed out.
+- When the automatic distance would remove more than half the records and is
+  skipped, the message now says whether records sharing a cell were reduced.
+
+### Recommended variables
+
+**Cause.** "Recommended" in ② Variables ticked the variables whose VIF in the
+full set was at most 10. With the 19 bioclimatic layers nearly every VIF in
+the full set is far above 10, because each layer is close to a combination of
+the others, so only a few were ticked: on one data set three temperature
+variables and no precipitation.
+
+**What was changed.** "Recommended" is now a stepwise selection: the variable
+with the highest VIF is removed and VIF recomputed until every VIF is at or
+below the threshold (as usdm::vifstep; Naimi et al. 2014), then the higher-VIF
+member of any pair above the correlation threshold is removed. The removals
+are written to the log in order, and `variable_priority_ranking.csv` gains
+the column `VIF_in_selection`. Variables with no strong pairwise correlation
+are no longer added on top. The selection is still only a starting point.
+
+### Spatial block folds: absences balanced as well
+
+**Cause.** Whole blocks were assigned to folds so as to even out the number
+of presences only. Every block without a presence added nothing to a fold's
+load, so all of them went to the same fold. With presences in a small core
+and pseudo-absences spread over a wide buffer, one fold received almost all
+the pseudo-absences: 741 against 23 on one data set, 978 of 1000 in a test
+case. Per-fold prevalence then differed several-fold, and TSS, the threshold
+and the ensemble's minimum-score filter with it.
+
+**What was changed.** Blocks holding presences go first, each to the fold
+whose share of presences (counted twice) plus share of absences is lowest after
+adding it; blocks without a presence then go to the fold with the fewest
+absences, so the fold that holds a densely recorded block still receives its
+share of absences. 50 seeded orderings are tried and the most even kept, as
+blockCV does with its iterations. The CV note in the log and the report now
+gives the presences and absences per fold. Checkerboard, band, environmental
+and random folds are unchanged.
+
+### Fewest presences: 5
+
+**Cause.** A species with three usable presences was modelled, with a
+warning. Spatial blocks cannot be formed from three records, so the folds
+were random, each scored on a single presence; AUC values of 0.96 and 1.00
+came out of two such species in a test run.
+
+**What was changed.** At least 5 usable presences are now required (3
+before), the smallest sample in the published evaluations of SDM methods at
+small sample sizes (Hernandez et al. 2006, doi:10.1111/j.0906-7590.2006.04700.x;
+Pearson et al. 2007, doi:10.1111/j.1365-2699.2006.01594.x). With fewer than 25
+presences the processing notices recommend jackknife evaluation (leave one
+presence out), which Pearson et al. (2007) proposed for such samples. When
+nothing was lost to the raster extent or NoData, the message no longer
+suggests checking the coordinate system. An external test set still needs 3.
+
+### Advanced Analysis: LASSO and Ridge as logistic regressions
+
+**Cause.** In ② Variables > Advanced Analysis, LASSO and Ridge were
+least-squares fits to the 0/1 presence label, not models of a binary
+response. The Ridge "recommended" list was the variables above the median
+coefficient, which has no basis. Pooling the PA repetitions counted each
+presence once per repetition, and in the cross-validation of the penalty a
+copy of a presence could sit in the training and the test fold at once.
+
+**What was changed.**
+
+- Both are penalised logistic regressions (L1 and L2) of presence against
+  absence on the standardised predictors, with presences and absences
+  weighted to equal totals (Barbet-Massin et al. 2012). The penalty is on the
+  glmnet scale and chosen by stratified k-fold cross-validation on binomial
+  deviance, as cv.glmnet does.
+- LASSO selects at the 1-SE rule by default (the largest penalty within one
+  standard error of the minimum deviance); the minimum or a typed value can
+  be chosen instead. Ridge, which removes no variable, ranks them and no
+  longer recommends any.
+- The plots show the cross-validated deviance under the coefficient paths;
+  Save All writes the full path (`lasso_path.csv`, `ridge_path.csv`) and the
+  penalties to `lasso_info.txt`.
+- Each presence is counted once when the PA sets are pooled (also for the
+  condition number and PCA).
+- Checked against R glmnet 5.1 (family = "binomial") on simulated data:
+  coefficients within 3e-3 (LASSO) and 4e-6 (Ridge) over the path, the same
+  variables set to zero.
+
+### Smaller changes
+
+- The "records per predictor" notice in ① Data now says that it counts the
+  predictors loaded, and how many the records allow, since the number kept in
+  ② Variables is what matters.
+- The records-per-predictor check is repeated with the predictors actually
+  kept, when a selection is confirmed in ② Variables and when the multi-species
+  batch run applies the first species' selection to another species. Before,
+  a species with 22 records modelled on 8 predictors chosen for another
+  species got no notice. The notice is written to the log and the report.
+- Multi-species batch run: each species now gets its own session log in its
+  own folder, and its report its own Session Log section. Before, the log
+  opened for the first species stayed open, every later species was written
+  into it, and their reports had no session log.
+- Maps on screen: the legend of the occurrence points (training presences,
+  test presences, pseudo-absences) is drawn below the map instead of in its
+  upper-right corner, where it covered the points it describes. The colour
+  bar takes the height of the map; with a wide, low extent it used to run far
+  above and below it.
+- Variables > Advanced Analysis: Save All Results wrote an incomplete
+  lasso_info.txt (the list of selected variables was lost) and reported a
+  warning; pca_loadings.csv carried an empty column. Both fixed.
+- Random folds (requested, or used when spatial blocks cannot be formed) are
+  never more than the presences or absences: with three presences and four
+  folds, one fold used to hold no presence, could not be scored, and the
+  others were scored on single presences. The note says when fewer folds
+  than requested were made.
+- A data set whose records fall in fewer than three predictor cells is now
+  stopped with a message saying so, instead of a hint about coordinate
+  systems.
+
+**Results that change.** Any run whose occurrence file has more than one record
+in a cell: fewer presences, different pseudo-absence and background samples,
+different folds and scores. Files with at most one record per cell give the
+same results as v2.0.1. To repeat a v2.0.1 run, switch the option off.
+Runs whose variables were chosen with "Recommended" can get a different set.
+Every run with spatial block cross-validation (the default) gets different
+folds, and so different cross-validation scores, even with the same seed.
+Species with 3 or 4 usable presences are no longer modelled. Advanced
+Analysis gives different LASSO and Ridge coefficients and selections; it
+does not affect the models unless a variable set was chosen from it.
+
+### Accessible area smaller than the number of points requested
+
+**Cause.** When the accessible area (buffer, buffered minimum convex polygon
+or calibration polygons) held fewer usable cells than the background or
+pseudo-absence points requested, the points were drawn from the whole raster
+instead, with a notice. The model was then calibrated against environments
+the species could not have reached, which is what the accessible area is
+there to prevent (Barve et al. 2011; VanDerWal et al. 2009).
+
+**What was changed.** All cells of the accessible area are used and fewer
+points are drawn; the notice gives both numbers. The background is a sample
+of the environments available in the area: once it holds every cell, the
+sample is complete. Maxent and `dismo::randomPoints` do the same (Phillips
+et al. 2006; Phillips & Dudík 2008; Elith et al. 2011). An accessible area
+with no usable cell stops the run.
+
+**Results change** only for runs that received the earlier notice "sampling
+from the full extent instead".
+
+### Steps no longer replaced without notice
+
+A review of every place where a failed step let the run go on found that the
+packaged program showed none of the warnings written with Python's
+`warnings` module (it has no console). Those warnings now go to the log of
+the running job. Where a failed step changed what was computed, the run now
+stops with a message, or the change is recorded in the log, the processing
+notices and the report:
+
+- Stops with a message (it used to continue with a substitute): accessible
+  area that could not be built (the whole extent was used); buffer around
+  calibration polygons (the polygons were used unbuffered while the summary
+  still gave the buffer); SRE envelope for pseudo-absences (random sampling
+  was used); presence-density weights for the MaxEnt background (no
+  weights); MaxEnt background (MaxEnt was fitted on the pseudo-absences);
+  presence-only background for ENFA and Mahalanobis (the pseudo-absence
+  rows were used); an ensemble member that cannot predict (the ensemble was
+  built from the other members, and in a strip-wise projection the set could
+  differ between strips); a raster coordinate system whose length unit
+  cannot be read (metres were assumed); an ANN layer list or RF
+  `max_features` that cannot be read (replaced by (100, 50) and `sqrt`).
+- Recorded: automatic thinning requested but no autocorrelation range
+  (records not thinned); threshold that could not be computed (0.5 is used
+  and the threshold source reads "FAILED, 0.5 used"); `min_roi` replaced by
+  `max_tss`; ESM weighting folds that could not follow the chosen design;
+  ESM pairs that could not be fitted; MESS truncation requested but MESS not
+  computed.
+- Permutation importance that could not be computed for a variable is now
+  missing (NaN) rather than 0, which read as "no importance".
+- A buffered minimum convex polygon around records on a line (a river, a
+  coast) is the buffered segment; the program used discs around each record.
+- Out-of-memory errors are never passed over.
+
+### Whole-world rasters: memory
+
+- Predictors are held in memory as 32-bit floating point when the file's
+  data type fits in it without loss (32-bit float and integers up to 16 bit:
+  WorldClim, CHELSA, elevation). The values are the file's own values; every
+  computation reads them as 64-bit numbers, so the results are unchanged
+  (checked: the same pseudo-absences and backgrounds as 2.0.1 for random,
+  disk and SRE sampling on world rasters). 64-bit and 32-bit-integer rasters
+  are kept as 64-bit. Nineteen world layers at 2.5 minutes take 2.6 GB
+  instead of 5.3 GB.
+- Drawing background points stacked all predictors into one array to find
+  the cells with a value in every layer. With 19 WorldClim layers at 2.5
+  minutes this asked for 5.3 GB more and stopped the run with an
+  out-of-memory error. The cells are now checked one layer at a time.
+- The accessible-area buffer computed distances over the whole raster (about
+  600 MB on a world grid). When that failed for lack of memory, the
+  restriction was dropped without notice, the log reported that the area
+  covered 100% of the extent, and the background would have been drawn from
+  the whole world. Distances are now computed only in the window around the
+  records that the buffer can reach (the mask is identical; 70 MB instead of
+  600 MB on a world grid). The minimum convex polygon is tested in its own
+  bounding box (it used whole-grid coordinate arrays, about 1.7 GB).
+- Coordinates of candidate cells are computed for the drawn cells only
+  (about 1.3 GB per draw on a world grid); the draw itself is unchanged.
+- Model predictions are made in blocks of 250,000 cells; univariate
+  extrapolation (ExDet NT1) and MESS hold fewer temporary copies.
+- Running ① Data again released the previous rasters only after the new
+  ones had been read, so both were in memory together. They are released
+  first.
+- Clipping the rasters to the study region remains the most effective way to
+  reduce memory use and run time.
+
+### Linux packages
+
+- The AppImage started the wrong file: its start script was written with the
+  build machine's paths in place of its own, so it did not open. It now starts
+  the program inside the AppImage and passes on its arguments.
+- The tar.gz now contains `run_habitus.sh` (it was written after the archive
+  had been made). Start the program with it rather than with `HABITUS`.
+- Both start scripts select XWayland (xcb) in a Wayland session unless
+  `QT_QPA_PLATFORM` is set, turn off the Chromium sandbox of the Map tab, which
+  cannot be set up from a portable folder, and accept
+  `HABITUS_SAFE_GRAPHICS=1` for software drawing when windows open empty.
+- The xcb libraries that not every distribution installs (`libxcb-cursor` and
+  four others) are included.
+
+---
+
 ## v2.0.1 — 9 November 2026
 
 One defect: distances were wrong when the predictor rasters are in a projected
