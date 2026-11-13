@@ -1,9 +1,25 @@
-# HABITUS v2.0.2
+# HABITUS v2.1.0
 
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE.txt)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE.txt)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://github.com/omerorucu/habitus/releases/latest)
+
+---
+
+## What's new in v2.1.0
+
+HABITUS is now free software under the GNU General Public License, version 3.
+The Linux packages no longer close on a key press, and Turkish and other
+locales no longer produce GDAL errors. The ensemble map contains the models
+that the run record says were projected (ensemble maps differ slightly from
+v2.0.2). Range change can be counted within the accessible area, with or
+without cells in extrapolated conditions, and always reports how much of the
+change lies in such cells. Tables separated by semicolons (with a decimal
+comma) or tabs, such as GBIF downloads, are read directly. A crash log is
+written for every platform. Details in [CHANGELOG.md](CHANGELOG.md).
+
+The macOS packages of 2.1.0 follow later; until then macOS users can keep using [v2.0.2](https://github.com/omerorucu/habitus/releases/tag/v2.0.2).
 
 ---
 
@@ -308,16 +324,16 @@ Everything runs locally on your machine. No data leave your computer.
 
 ## Download
 
-Installers are published on the [**latest release**](https://github.com/omerorucu/habitus/releases/latest) page.
+Installers are published on the [**latest release**](https://github.com/omerorucu/habitus/releases/latest) page. The macOS packages of 2.1.0 follow later; until then macOS users can keep using [v2.0.2](https://github.com/omerorucu/habitus/releases/tag/v2.0.2).
 
 | Platform | File | Description |
 |----------|------|-------------|
-| Windows | `HABITUS_Setup_v2.0.2.exe` | Installer (recommended) |
-| Windows | `HABITUS_v2.0.2_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
-| Linux | `HABITUS_v2.0.2_x86_64.AppImage` | Portable — `chmod +x` then run |
-| Linux | `HABITUS_Setup_v2.0.2_Linux_x64.tar.gz` | Archive, extract and run |
-| macOS (Apple Silicon) | `HABITUS_Setup_v2.0.2_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
-| macOS (Intel) | `HABITUS_Setup_v2.0.2_macOS_x86_64.dmg` | Disk image for Intel Macs |
+| Windows | `HABITUS_Setup_v2.1.0.exe` | Installer (recommended) |
+| Windows | `HABITUS_v2.1.0_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| Linux | `HABITUS_v2.1.0_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v2.1.0_Linux_x64.tar.gz` | Archive, extract and run |
+| macOS (Apple Silicon) | `HABITUS_Setup_v2.0.2_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications (v2.0.2; the 2.1.0 disk images follow) |
+| macOS (Intel) | `HABITUS_Setup_v2.0.2_macOS_x86_64.dmg` | Disk image for Intel Macs (v2.0.2; the 2.1.0 disk images follow) |
 | All | `habitus_sample.zip` | Sample dataset: *Pinus brutia*, 108 records, 23 predictors, and the calibration-polygon and absence files for trying the calibration-area and absence-data features |
 
 The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk images are signed with the developer's Apple Developer ID certificate and notarised by Apple, so Gatekeeper opens them without an unidentified-developer warning.
@@ -390,7 +406,7 @@ Perspective, [Technical Report]. https://doi.org/10.53463/ecopers.20260435
 
 ## Licence
 
-MIT Licence — see [LICENSE.txt](LICENSE.txt).
+GNU General Public License, version 3 — see [LICENSE.txt](LICENSE.txt) (MIT up to v2.0.2). The corresponding source code is provided on request (omerorucu@sdu.edu.tr). The bundled third-party libraries keep their own licences.
 
 ---
 
