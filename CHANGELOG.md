@@ -4,6 +4,118 @@ All notable changes to HABITUS are recorded here.
 
 ---
 
+## v2.1.0 — 14 November 2026
+
+HABITUS is now free software under the GNU General Public License, version 3.
+The Linux packages no longer close on a key press. The ensemble map contains
+the models that the run record says were projected. ⑥ Range change can count
+change within the accessible area, with or without cells in extrapolated
+conditions, and always reports how much of the change lies in such cells.
+Tables separated by semicolons or tabs are read. Results change for ensemble
+maps (see below); everything else gives the same numbers as 2.0.2.
+
+### Ensemble map: the projected models only (results change)
+
+**Cause.** The projector built the EM* maps from every model that passed the
+quality filter, the cross-validation (fold) models included, while the
+per-algorithm maps, the "Also project the cross-validation models" option
+(off by default) and the run record ("replicates_projected": "full") said
+that only the models refitted on all data were projected. When an
+algorithm's full model fell below the minimum score while some of its fold
+models passed, the algorithm entered the ensemble through those fold models
+alone. Found while reproducing a published biomod2 ensemble.
+
+**Now.** The ensemble combines the projected models: the full models, plus
+the fold models only when the option is ticked. An algorithm whose full model
+does not reach the minimum score is left out; when no full model reaches it,
+no ensemble map is written and a notice names the option. Ensemble maps
+differ slightly from 2.0.2 (fewer members, no fold models); cross-validated
+ensemble scores are unchanged.
+
+### Range change within the accessible area
+
+**Cause.** ⑥ compared the current and future maps over the whole study
+boundary. With a boundary drawn around several species, or much larger than
+the area a species could reach, most of the projected loss lay far from any
+record and in conditions outside the calibration range. In a case study of
+four firs, the net change of one species under SSP5-8.5 was −55% over the
+boundary and −16% within 300 km of its records, where 98% of the cells were
+extrapolated.
+
+**Now.** ① Data writes the accessible area as `accessible_area.tif`. ⑥ reports,
+besides the whole boundary, the change within the accessible area and within
+it without cells where ExDet NT1 < 0, and the share of changed cells in
+extrapolated conditions; "Count change within" sets the extent of the
+headline numbers and of the map. The default (whole boundary) and its
+numbers are unchanged. The report lists the same, with a note when a quarter
+or more of the change is extrapolation.
+
+### Linux: crash on a key press
+
+**Cause.** The Linux packages carried libraries of the build system (Ubuntu
+22.04) that the user's system loads its own companions for. The bundled
+libxkbcommon, paired with the system's newer libxkbcommon-x11, crashed
+HABITUS on Shift, Ctrl or any key on newer distributions; the bundled GLib
+made the system's gvfs module fail ("undefined symbol:
+g_task_set_static_name").
+
+**Now.** libxkbcommon, the X11/xcb core libraries, GLib/GIO, D-Bus,
+fontconfig, FreeType, HarfBuzz, libstdc++ and the GL libraries are taken from
+the system (every supported system, glibc 2.35 or later, has them).
+
+### Turkish and other locales: GDAL errors
+
+**Cause.** Qt sets the user's locale for the whole process on Linux and
+macOS. In a Turkish locale, GDAL's case-insensitive comparisons turn "I" into
+a dotless "ı": hundreds of "apszKnownConfigOptions[] isn't correctly sorted"
+errors were printed, and names differing only in case could stop matching.
+
+**Now.** Character handling, collation and numbers return to the neutral C
+locale after the interface starts; the interface itself is unaffected.
+
+### Crash log
+
+A native crash or an uncaught error is written to `crash_YYYYMMDD.log` under
+the user data folder (Windows `%LOCALAPPDATA%\HABITUS\logs`, macOS
+`~/Library/Application Support/HABITUS/logs`, Linux
+`~/.local/share/HABITUS/logs`), so that a program that closed without a
+message leaves something to send.
+
+### Tables separated by semicolons or tabs
+
+Spreadsheets in many European locales save "CSV" with ";" between fields and
+"," as the decimal mark, and GBIF downloads are tab-separated. Every
+occurrence, absence and target-group table is now read with the delimiter and
+decimal mark of the file, and a UTF-8 byte-order mark is removed. GBIF
+columns (gbifID, species, decimalLongitude, decimalLatitude ...) are found by
+name, and the species name is no longer taken from a numeric identifier
+column.
+
+### Messages
+
+- A batch run's summary and log keep the reason a species failed (e.g. "The
+  29 presence record(s) fall in only 3 predictor cell(s) …"); before, they
+  kept the first lines of the error trace and lost the reason.
+- A predictor layer that has no value at any record is named; before, the
+  message suggested checking the coordinate system of the records.
+- With a single predictor, ② Variables says that modelling needs two;
+  before, it stopped with an error trace and Confirm refused.
+- A warning that the program logs itself is no longer written to the log a
+  second time.
+- The log line of a full model no longer prints a one-split score that the
+  results replace by the mean of the cross-validation folds.
+- ⑥ Fill Paths says which list to choose instead of doing nothing.
+- The run record labels values without a shipped default (inputs and numbers
+  found during the run) "recorded" instead of "user", and records one record
+  per cell with its default.
+
+### Licence
+
+GNU General Public License, version 3 (previously MIT). The corresponding
+source code is provided on request (omerorucu@sdu.edu.tr).
+
+The macOS packages of 2.1.0 follow later; until then macOS users keep 2.0.2.
+
 ## v2.0.2 — 10 November 2026
 
 Occurrence records are reduced to one per predictor cell by default, and
