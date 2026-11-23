@@ -4,6 +4,39 @@ All notable changes to HABITUS are recorded here.
 
 ---
 
+## v3.0.0 — 24 November 2026
+
+HABITUS can be used in English, Turkish or Spanish. The language is chosen in
+the header and takes effect when HABITUS is restarted. On the Map tab a study
+boundary can be drawn with the mouse and used as the mask. Results are the same
+as in 2.1.0 in every language.
+
+### Interface in three languages
+
+Every window, message, log line, figure label, the HTML report, the ODMAP
+protocol, the validation report and the Help pages are available in English,
+Turkish and Spanish. The language list sits next to *New Analysis*; the choice
+is remembered and applied at the next start, because a running analysis keeps
+the language it was started in. Without a saved choice the system language is
+used, and English for any other system language.
+
+What stays in English in every language, because other programs or later runs
+read it: file and column names, the values in `habitus_run_config.json`, the
+ODMAP element names (the published protocol's terms), algorithm and parameter
+names, and the reason codes in the dropped-record lists. The Turkish and
+Spanish reports date the run as YYYY-MM-DD.
+
+An end-to-end run (five algorithms, spatial block cross-validation, current
+and future projection, range change) gives identical scores and maps in 2.1.0
+and in all three languages.
+
+### Drawing the study boundary on the map
+
+*Draw Boundary* on the Map tab draws a rectangle: press the mouse at one
+corner, drag to the opposite corner and release. *Use This Boundary* writes it
+to the corner coordinates of the study boundary in ① Data, so the rasters are
+clipped to it when the data are loaded, exactly as with typed corners.
+
 ## v2.1.0 — 14 November 2026
 
 HABITUS is now free software under the GNU General Public License, version 3.
