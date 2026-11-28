@@ -4,6 +4,160 @@ All notable changes to HABITUS are recorded here.
 
 ---
 
+## v3.0.1 — 28 November 2026
+
+A fix release. Some results change (listed first); the other fixes change
+records, the report and interface texts only.
+
+### Results that change
+
+- **CatBoost.** The model is now built with the Bayesian bootstrap, so the
+  `bagging_temperature` box takes effect. Under the CPU default (MVS) it was
+  ignored. Every CatBoost result changes (probabilities, binary maps, scores,
+  ensembles that contain CatBoost). On the Abies nordmanniana example the
+  default map moved by 0.0075 on average (at most 0.24; Spearman ρ 0.97 with
+  3.0.0), the 5-fold AUC stayed at 0.976.
+- **ENFA.** The marginality and specialisation factors are now those of
+  Hirzel et al. (2002) and R adehabitatHS::enfa: on the Abies nordmanniana
+  example the marginality, all seven specialisation values and the factor
+  loadings agree with adehabitatHS 0.3.18 to 1e-13 (sign of an axis aside;
+  checked by a test against a stored R result). The K axes kept are the most
+  specialised ones (smallest species/global variance ratio); earlier releases
+  kept the largest ratios, the directions of widest tolerance. The factors
+  are computed on standardised variables with plain moment estimates; the
+  earlier Ledoit-Wolf shrinkage of the raw-unit global covariance made the
+  result depend on the units (multiplying one variable by 1000 changed the
+  3.0.0 map ranking to Spearman ρ 0.41). K is at most the number of
+  continuous variables − 1 (a note says so when more are asked for); with a
+  single variable the score is the marginality distance alone; collinear or
+  constant variables are dropped instead of amplified. In the score a
+  specialisation axis is measured in species SDs with the species/global
+  variance ratio bounded below at 0.001, so a variable that is almost
+  constant among the presences no longer collapses the map to ~0. The score
+  itself, exp(−0.5 d²) rescaled to [0, 1], is HABITUS's own (not Biomapper's).
+  Every ENFA result changes; there is no switch back. On the example (K = 3,
+  5-fold random CV) AUC 0.888 → 0.943, Boyce 0.784 → 0.736; the map ranking
+  is weakly related to the 3.0.0 one (Spearman ρ 0.12).
+- **Ensemble hold-out scores.** The threshold-dependent hold-out scores of the
+  ensembles (TSS, Kappa, sensitivity, specificity, MCC, Jaccard, Sørensen,
+  FPB, predicted-presence fraction, Threshold) are computed at the cut-off the
+  ensemble's binary map applies: 0.5 for EMca, the weighted mean of the
+  members' thresholds for EMwmean, `combine_threshold` for median, meansup
+  and meanthr. Before, a threshold was searched afresh on the ensemble
+  surface. ROC, Boyce, Brier, calibration and the maps do not change.
+  Threshold_source reads "ensemble map rule".
+- **⑦ Validation, binary mode with a CSV of points.** `reference_value` is
+  taken as the 0/1 class; it was classed with the continuous breaks (0 → class
+  1, 1 → class 5), which made the confusion matrix, OA, kappa and F1
+  meaningless (OA 0 for points that match the map exactly). The CSV is read
+  with a BOM (Excel's UTF-8 CSV no longer drops every row), and a point just
+  outside the top or left edge is excluded instead of counted in row/column 0.
+- **⑥ Range change, share of changed cells in extrapolated conditions** is
+  counted in the chosen extent (it was always the whole study boundary). With
+  a current range of 0 cells the percentages are undefined and shown as "—"
+  (they were 100 × the cell count).
+- **Tuning with "Balance classes".** The ③ setting now reaches the grid
+  search, so with balancing on the tuning table and the suggested point can
+  change (on the example RF grid the suggested point moved from
+  max_features 2 / min_samples_leaf 10 to 4 / 1).
+- **Algorithm mean maps** (`<algo>_mean_prob`, `_bin`, `_sd`) are built from the
+  models that passed the minimum ensemble score, like the ensemble's first
+  layer. When no projected model passes, all are averaged as before and the
+  log says so. Only algorithms with a model below the minimum are affected.
+- **Variable importance of the scikit-learn algorithms** (GLM, GLMNET, RF,
+  GBM, BRT, XGB, LGB, CAT, SVM, ANN, CART). Each "Variable importance reps"
+  repetition now draws its own permutation seed from the generator seeded by
+  the run seed, the pseudo-absence set, the fold and the algorithm; before,
+  every repetition used the same `random_state`, so the setting changed only
+  the run time. The importance values of these algorithms change (they are
+  the mean over really different permutations); a rerun with the same seed
+  still gives the same values.
+- **VIF ranking (②).** `Mean_Corr` is the mean |r| with the other n − 1
+  variables (it divided by n, the zeroed diagonal included), so
+  `Mean_Corr`, `Priority_Score` and `Corr_OK` change. The ranking shown when
+  ② opens is computed with the spin-box thresholds (0.80 / 10 by default)
+  instead of ①'s fixed 0.70 / 10, and again whenever a threshold changes, so
+  the first "Recommended" ticks can differ. The pair-table colours and
+  `Recommend_drop` of `high_correlation_pairs.csv` follow the selection (the
+  member it drops; if both, the higher VIF) instead of the univariate AUC;
+  the CSV gains `VIF_A` and `VIF_B`.
+
+### Fixes that do not change results
+
+- LightGBM `subsample` now acts. LightGBM bags rows only when a bagging
+  frequency is set, and none was passed, so the shown 0.8 never bagged.
+  Below 1 the model now draws a new subsample at every iteration; the
+  default is 1.0 (no bagging), LightGBM's own default as in its R package,
+  which is what every earlier run actually did, so results with the default
+  are unchanged (checked bit for bit). Runs that set it below 1 now bag.
+- The console and session log no longer repeat scikit-learn's "X does not
+  have valid feature names" warning for LightGBM (LightGBM 4.6 records
+  feature names even when fitted on an array; predictions are unaffected).
+
+- Ensemble weights sum to 1 when a member's weight score is not finite (the
+  hold-out EMwmean surface could exceed 1). Maps were already renormalised and
+  are unchanged.
+- Clamping: ③'s clamping applies to every prediction of its models, including
+  ⑤'s projections. While it is on, ⑤'s box is shown ticked and locked, with
+  a tooltip saying why, and `_projection_options.json` (also for ③'s
+  `current` projection) records the clamping actually applied, plus
+  `clamp_models`, `clamp_projection` and `maxent_feature_clamp` (elapid clamps
+  MaxEnt features by default). Maps are unchanged.
+- ⑤ *Remove All* keeps ③'s current map, and removes the novelty, projection
+  settings, grid-alignment and batch records of the removed scenarios.
+- Tuning: the fit count and the 600-fit confirmation include the inner fits
+  each fold runs for its out-of-fold threshold (about four times as many).
+- Variable ranking (automatic VIF check and ②): labels stay aligned with their
+  rows when rows with missing values are dropped (not triggered in the normal
+  workflow).
+- Report: heading numbers no longer repeat (scenario sections 7.1…7.n, then
+  novelty and notices; range change 8.1, 8.2…); the session log shown is the
+  open one, else the newest; map PNGs of a future scenario saved in the output
+  folder appear under that scenario in section 7, not in section 6; "300 DPI"
+  replaced by the resolution chosen when saving.
+- ⑦ Validation: exported sample coordinates are cell centres; stratified
+  sampling with no valid cell no longer fails; systematic sampling logs when
+  it yields fewer points than requested.
+- External test set: the run notes give its prevalence (0.5 when the CSV has
+  no absences) next to the training prevalence.
+- Interface texts (English, Turkish, Spanish): categorical encoding note;
+  "Used (current)" threshold tooltip (mean of the CV-fold thresholds,
+  translated); ⑤ messages no longer mention a "④ Ensemble" tab or an
+  "Auto-fill" button; ESM has a hold-out; max_tss "little affected by
+  prevalence"; min_roi; max_jaccard, max_sorensen and max_fpb always give the
+  same threshold (said in their tooltips); CatBoost and ENFA K tooltips; a few
+  log lines that were English in every language.
+- The colour bar of the suitability map ("Suitability (0–1)") now follows the
+  interface language; in 3.0.0 it stayed in English in Turkish and Spanish.
+- Map viewer and map tables (③ Generated Maps, ⑤ projections): the type of a
+  layer follows its key. `EMsd`, `EMcv`, `EMrange`, `<algo>_sd`, `NT1`, `NT2`
+  and `MESS` are "Continuous" and drawn with a viridis colour bar over their
+  own range; `MIC_NT1`, `MIC_NT2` and `MoD` are "Classes (variable index)";
+  before, every key not ending in `_prob` was labelled "Binary (0/1)" and
+  drawn with the two-class palette (small SD values showed as grey).
+- Presence-only algorithms with an empty test fold: when training presences
+  are moved into a test fold that holds none (about 20 %), the log says so,
+  the run configuration lists it (`test_presences_moved`), the new
+  `Test_presences_moved` column of `evaluation_scores.csv` gives the number
+  and the report names the folds in section 5.0. The move itself is
+  unchanged, so no score changes.
+- Report: the caption of the correlation heat map describes the `RdYlGn`
+  scale (red negative, green positive; it said red positive, blue negative).
+  Without a map PNG saved from the viewer, sections 6 and 7 show the ensemble
+  maps drawn from the GeoTIFFs of `current/` and of each scenario folder (in
+  memory, nothing is written), and section 6 says so when there is no map at
+  all; a saved PNG older than the maps of its folder is marked in its caption.
+  The report's own map drawing no longer switches matplotlib's backend inside
+  the running program.
+- "Save All Charts" (④): the closing message and the tooltip name the files
+  really written; it listed a `figures/response_curves/` folder that is never
+  created.
+- Help and ② texts: the pair advice says that red marks the member the
+  "Recommended" selection drops (it advised keeping the higher-AUC one); the
+  VIF threshold tooltip says it also drives "Recommended".
+
+---
+
 ## v3.0.0 — 24 November 2026
 
 HABITUS can be used in English, Turkish or Spanish. The language is chosen in
