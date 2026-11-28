@@ -1,9 +1,24 @@
-# HABITUS v3.0.0
+# HABITUS v3.0.1
 
 **Habitat Analysis and Biodiversity Integrated Toolkit for Unified Species Distribution Modelling (SDM)**
 
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE.txt)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://github.com/omerorucu/habitus/releases/latest)
+
+---
+
+## What's new in v3.0.1
+
+A fix release, published for **Windows, Linux and macOS** (Apple Silicon and
+Intel). Some results change: CatBoost now uses the Bayesian bootstrap; ENFA
+follows Hirzel et al. (2002) and matches `adehabitatHS::enfa`; the
+threshold-dependent hold-out scores of the ensembles are computed at the
+threshold of the binary map; ⑦ Validation in binary mode with a CSV of points,
+the extrapolated share in ⑥ Range change, tuning with "Balance classes",
+the algorithm mean maps, variable importance and the VIF ranking were
+corrected. LightGBM row subsampling now takes effect when set below 1 (the
+default stays 1.0, no bagging). Other fixes concern records, the report and
+interface texts. Details in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
@@ -339,16 +354,16 @@ Everything runs locally on your machine. No data leave your computer.
 
 ## Download
 
-Installers are published on the [**latest release**](https://github.com/omerorucu/habitus/releases/latest) page. The macOS packages of 3.0.0 follow later; until then macOS users can keep using [v2.0.2](https://github.com/omerorucu/habitus/releases/tag/v2.0.2).
+Installers are published on the [**latest release**](https://github.com/omerorucu/habitus/releases/latest) page.
 
 | Platform | File | Description |
 |----------|------|-------------|
-| Windows | `HABITUS_Setup_v3.0.0.exe` | Installer (recommended) |
-| Windows | `HABITUS_v3.0.0_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
-| Linux | `HABITUS_v3.0.0_x86_64.AppImage` | Portable — `chmod +x` then run |
-| Linux | `HABITUS_Setup_v3.0.0_Linux_x64.tar.gz` | Archive, extract and run |
-| macOS (Apple Silicon) | `HABITUS_Setup_v2.0.2_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications (v2.0.2; the 3.0.0 disk images follow) |
-| macOS (Intel) | `HABITUS_Setup_v2.0.2_macOS_x86_64.dmg` | Disk image for Intel Macs (v2.0.2; the 3.0.0 disk images follow) |
+| Windows | `HABITUS_Setup_v3.0.1.exe` | Installer (recommended) |
+| Windows | `HABITUS_v3.0.1_Windows_x64_portable.zip` | Portable — unzip and run `HABITUS.exe`, no installation |
+| Linux | `HABITUS_v3.0.1_x86_64.AppImage` | Portable — `chmod +x` then run |
+| Linux | `HABITUS_Setup_v3.0.1_Linux_x64.tar.gz` | Archive, extract and run |
+| macOS (Apple Silicon) | `HABITUS_Setup_v3.0.1_macOS_arm64.dmg` | Disk image for M1 and later; open it and drag HABITUS onto Applications |
+| macOS (Intel) | `HABITUS_Setup_v3.0.1_macOS_x86_64.dmg` | Disk image for Intel Macs |
 | All | `habitus_sample.zip` | Sample dataset: *Pinus brutia*, 108 records, 23 predictors, and the calibration-polygon and absence files for trying the calibration-area and absence-data features |
 
 The Windows builds are code-signed with an Authenticode certificate issued to the developer, so Windows shows the publisher name rather than an unknown-publisher warning. The macOS disk images are signed with the developer's Apple Developer ID certificate and notarised by Apple, so Gatekeeper opens them without an unidentified-developer warning.
