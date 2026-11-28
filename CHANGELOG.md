@@ -155,6 +155,19 @@ records, the report and interface texts only.
 - Help and ② texts: the pair advice says that red marks the member the
   "Recommended" selection drops (it advised keeping the higher-AUC one); the
   VIF threshold tooltip says it also drives "Recommended".
+- Report and threshold tooltip: TSS is described as much less affected by
+  prevalence than kappa, not as independent of it (Somodi et al. 2017).
+- Turkish: the range-change classes are "Kalıcı var / Kalıcı yok" everywhere
+  (the report, the Help pages and the manual said "Kararlı"); a change of
+  coordinate system is "dönüştürme", not "izdüşürme".
+- Turkish and Spanish: the sampling-bias note and the "ADVISORY" and
+  "Cross-validation" prefixes in the run configuration notes, two exclusion
+  reasons on the Map (missing coordinate; absence record outside the extent or
+  on NoData), the RF `max_features` and ANN hidden-layer errors, the duplicate
+  predictor-name error and ⑤'s short layer names are translated. Codes, keys
+  and file names stay in English.
+- The polygon warning names the real check box, "Keep only the polygons
+  containing an occurrence record".
 
 ---
 
